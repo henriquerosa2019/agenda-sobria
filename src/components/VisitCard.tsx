@@ -50,13 +50,13 @@ const VisitCard = ({ visit }: VisitCardProps) => {
             <span className="text-sm font-medium text-card-foreground">Companheiros:</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {visit.companions.map((companion, index) => (
+            {visit.companions.map((companion) => (
               <Badge 
-                key={index} 
+                key={companion.id} 
                 variant="secondary"
                 className="bg-primary/10 text-primary border-primary/20"
               >
-                {companion}
+                {companion.name}
               </Badge>
             ))}
           </div>

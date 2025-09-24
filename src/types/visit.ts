@@ -1,13 +1,22 @@
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  icon: string;
+}
+
+export interface Companion {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 export interface Visit {
   id: string;
   date: string;
   time: string;
-  location: {
-    name: string;
-    address: string;
-    icon: string;
-  };
-  companions: string[];
+  location: Location;
+  companions: Companion[];
 }
 
 export interface VisitFilter {
