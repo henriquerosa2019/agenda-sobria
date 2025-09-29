@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient"; // <- importe o client
 import { Visit } from "@/hooks/useVisits";
 
 interface Props {
@@ -13,17 +14,36 @@ export default function VisitConfigModal({ visit, onClose, onSave }: Props) {
   const [companions, setCompanions] = useState(
     visit.companions?.map((c) => c.name).join(", ") || ""
   );
+  const [loading, setLoading] = useState(false);
 
-  const handleSave = () => {
-    onSave(visit.id, {
+  const handleSave = async () => {
+    setLoading(true);
+
+    const updatedVisit: Partial<Visit> = {
       date,
       time,
       companions: companions
         .split(",")
         .map((c, i) => ({ id: `${visit.id}-c${i}`, name: c.trim() }))
         .filter((c) => c.name !== ""),
-    });
-    onClose();
+    };
+
+    // 🔹 Atualiza no Supabase
+    const { error } = await supabase
+      .from("visits")
+      .update(updatedVisit)
+      .eq("id", visit.id);
+
+    if (error) {
+      console.error("Erro ao salvar no Supabase:", error.message);
+      alert("Falha ao salvar no banco!");
+    } else {
+      // 🔹 Atualiza o estado local também
+      onSave(visit.id, updatedVisit);
+      onClose();
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -61,15 +81,17 @@ export default function VisitConfigModal({ visit, onClose, onSave }: Props) {
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
+            disabled={loading}
             className="rounded-md border px-4 py-2 hover:bg-gray-100"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
+            disabled={loading}
             className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
           >
-            Salvar
+            {loading ? "Salvando..." : "Salvar"}
           </button>
         </div>
       </div>
