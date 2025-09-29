@@ -1,11 +1,11 @@
+// src/components/VisitConfigModal.tsx
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient"; // <- importe o client
 import { Visit } from "@/hooks/useVisits";
 
 interface Props {
   visit: Visit;
   onClose: () => void;
-  onSave: (id: string, updated: Partial<Visit>) => void;
+  onSave: (id: string, updated: Partial<Visit>) => Promise<void>;
 }
 
 export default function VisitConfigModal({ visit, onClose, onSave }: Props) {
@@ -14,36 +14,19 @@ export default function VisitConfigModal({ visit, onClose, onSave }: Props) {
   const [companions, setCompanions] = useState(
     visit.companions?.map((c) => c.name).join(", ") || ""
   );
-  const [loading, setLoading] = useState(false);
+  const [observation, setObservation] = useState(visit.observation || "");
 
   const handleSave = async () => {
-    setLoading(true);
-
-    const updatedVisit: Partial<Visit> = {
+    await onSave(visit.id, {
       date,
       time,
       companions: companions
         .split(",")
         .map((c, i) => ({ id: `${visit.id}-c${i}`, name: c.trim() }))
         .filter((c) => c.name !== ""),
-    };
-
-    // 🔹 Atualiza no Supabase
-    const { error } = await supabase
-      .from("visits")
-      .update(updatedVisit)
-      .eq("id", visit.id);
-
-    if (error) {
-      console.error("Erro ao salvar no Supabase:", error.message);
-      alert("Falha ao salvar no banco!");
-    } else {
-      // 🔹 Atualiza o estado local também
-      onSave(visit.id, updatedVisit);
-      onClose();
-    }
-
-    setLoading(false);
+      observation,
+    });
+    onClose();
   };
 
   return (
@@ -67,9 +50,7 @@ export default function VisitConfigModal({ visit, onClose, onSave }: Props) {
           className="w-full border rounded px-3 py-2 mb-4"
         />
 
-        <label className="block mb-2 text-sm">
-          Companheiros (separar por vírgula)
-        </label>
+        <label className="block mb-2 text-sm">Companheiros (vírgula)</label>
         <input
           type="text"
           value={companions}
@@ -77,21 +58,25 @@ export default function VisitConfigModal({ visit, onClose, onSave }: Props) {
           className="w-full border rounded px-3 py-2 mb-4"
         />
 
-        {/* Botões */}
+        <label className="block mb-2 text-sm">Observação</label>
+        <textarea
+          value={observation}
+          onChange={(e) => setObservation(e.target.value)}
+          className="w-full border rounded px-3 py-2 mb-4"
+        />
+
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            disabled={loading}
             className="rounded-md border px-4 py-2 hover:bg-gray-100"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
-            disabled={loading}
             className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
           >
-            {loading ? "Salvando..." : "Salvar"}
+            Salvar
           </button>
         </div>
       </div>
