@@ -1,69 +1,75 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Clock, MapPin, Users } from 'lucide-react';
-import { Visit } from '@/types/visit';
+import { MapPin, Calendar, Users, CheckCircle2 } from "lucide-react";
 
-interface VisitCardProps {
-  visit: Visit;
-}
-
-const VisitCard = ({ visit }: VisitCardProps) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: '2-digit'
-    });
-  };
-
-  return (
-    <Card className="bg-gradient-to-br from-card via-card to-secondary/20 border-border shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02]">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">{visit.location.icon}</span>
-            <div>
-              <h3 className="font-semibold text-card-foreground text-lg leading-tight">
-                {visit.location.name}
-              </h3>
-              <div className="flex items-center gap-1 text-muted-foreground mt-1">
-                <MapPin className="w-4 h-4" />
-                <p className="text-sm">{visit.location.address}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pt-0">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="flex items-center gap-2 text-primary">
-            <Clock className="w-4 h-4" />
-            <span className="font-medium">{formatDate(visit.date)} - {visit.time}h</span>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-card-foreground">Companheiros:</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {visit.companions.map((companion) => (
-              <Badge 
-                key={companion.id} 
-                variant="secondary"
-                className="bg-primary/10 text-primary border-primary/20"
-              >
-                {companion.name}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+type Companion = { id?: string; name: string };
+type Location = { id?: string; name?: string; address?: string };
+type Visit = {
+  id: string;
+  location?: Location;
+  displayDate?: string;  // formatada no Dashboard
+  displayTime?: string;  // formatada no Dashboard
+  time?: string;         // agendado (fallback)
+  startTime?: string;    // execução real (se houver)
+  endTime?: string;      // execução real (se houver)
+  isFinalized?: boolean;
+  companions?: Companion[];
 };
 
-export default VisitCard;
+function minutesDiff(start?: string, end?: string) {
+  if (!start || !end) return null;
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  const diff = (eh * 60 + em) - (sh * 60 + sm);
+  if (diff <= 0) return null;
+  const h = Math.floor(diff / 60);
+  const m = diff % 60;
+  if (h && m) return `${h}h${String(m).padStart(2, "0")}m`;
+  if (h) return `${h}h`;
+  return `${m}m`;
+}
+
+export default function VisitCard({ visit }: { visit: Visit }) {
+  const dur = minutesDiff(visit.startTime, visit.endTime);
+
+  return (
+    <div className="rounded-lg border bg-white p-6 shadow-sm relative">
+      {/* Badge 'Realizada' */}
+      {visit.isFinalized && (
+        <div className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+          <CheckCircle2 className="w-3 h-3" />
+          Realizada: {visit.startTime}–{visit.endTime}
+          {dur ? ` (${dur})` : ""}
+        </div>
+      )}
+
+      <h3 className="text-lg font-bold mb-1">
+        {visit.location?.name ?? "Local"}
+      </h3>
+
+      <p className="flex items-center text-sm text-gray-600 mb-2">
+        <MapPin className="w-4 h-4 mr-1" />
+        {visit.location?.address ?? "Endereço não informado"}
+      </p>
+
+      <p className="flex items-center text-sm font-medium text-blue-600 mb-2">
+        <Calendar className="w-4 h-4 mr-1" />
+        {visit.displayDate} - {(visit.displayTime ?? visit.time)}h
+      </p>
+
+      <div className="flex items-center flex-wrap gap-2">
+        <Users className="w-4 h-4 mr-1 text-gray-500" />
+        {visit.companions && visit.companions.length > 0 ? (
+          visit.companions.map((c, idx) => (
+            <span
+              key={c.id ?? idx}
+              className="rounded-full bg-gray-100 px-3 py-1 text-xs"
+            >
+              {c.name}
+            </span>
+          ))
+        ) : (
+          <span className="text-xs text-gray-500">Nenhum companheiro</span>
+        )}
+      </div>
+    </div>
+  );
+}
