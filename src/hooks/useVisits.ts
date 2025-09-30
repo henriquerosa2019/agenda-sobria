@@ -1,20 +1,21 @@
 // src/hooks/useVisits.ts
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 
 export interface Visit {
   id: string;
   date: string;            // YYYY-MM-DD
-  time: string;            // HH:mm
+  time: string;            // HH:mm (agendado)
   location?: { id: string; name: string; address: string };
   companions?: { id: string; name: string }[];
+  // execução real (Finalizar)
   startTime?: string;      // HH:mm
   endTime?: string;        // HH:mm
   isFinalized?: boolean;
+  // Configurar
   observation?: string;
 }
 
-/* Helpers */
+/* ========== Helpers de normalização ========== */
 function onlyDate(input?: string): string {
   if (!input) return "";
   const ymd = String(input).split("T")[0];
@@ -22,12 +23,14 @@ function onlyDate(input?: string): string {
   if (!y || !m || !d) return "";
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
+
 function onlyTime(input?: string): string {
   if (!input) return "";
   return String(input).slice(0, 5); // HH:mm
 }
+
 function normalizeCompanions(raw: any, visitId: string) {
-  if (!raw) return [];
+  if (!raw) return [] as { id: string; name: string }[];
   if (Array.isArray(raw)) {
     return raw
       .map((c, i) =>
@@ -39,6 +42,7 @@ function normalizeCompanions(raw: any, visitId: string) {
   }
   return [];
 }
+
 function normalizeVisit(v: any, idx: number): Visit {
   const id = String(v?.id ?? v?.uuid ?? idx);
 
@@ -51,119 +55,137 @@ function normalizeVisit(v: any, idx: number): Visit {
   const time =
     onlyTime(v?.time) || onlyTime(v?.startTime) || onlyTime(v?.hora) || "";
 
-  const location = {
-    id: v?.location_id ?? v?.locationId ?? "",
-    name: v?.location_name ?? v?.location?.name ?? "Local",
-    address: v?.location_address ?? v?.location?.address ?? "",
-  };
+  const location =
+    v?.location ??
+    v?.local ?? {
+      id: v?.locationId ?? v?.localId ?? "",
+      name:
+        v?.locationName ??
+        v?.localNome ??
+        v?.local?.name ??
+        v?.location?.name ??
+        "Local",
+      address:
+        v?.address ??
+        v?.endereco ??
+        v?.local?.address ??
+        v?.location?.address ??
+        "",
+    };
 
   const companions = normalizeCompanions(
     v?.companions ?? v?.companheiros ?? v?.members ?? v?.pessoas,
     id
   );
 
-  return {
-    id,
-    date,
-    time,
-    location,
-    companions,
-    startTime: onlyTime(v?.start_time ?? v?.realStartTime),
-    endTime: onlyTime(v?.end_time ?? v?.realEndTime),
-    isFinalized: Boolean(v?.is_finalized ?? v?.isFinalized),
-    observation: typeof v?.observation === "string" ? v.observation : undefined,
-  };
-}
+  const startTime = onlyTime(v?.realStartTime ?? v?.startTimeReal ?? v?.startTime);
+  const endTime   = onlyTime(v?.realEndTime   ?? v?.endTimeReal   ?? v?.endTime);
+  const isFinalized = Boolean(v?.isFinalized);
 
-/* Hook principal */
+  const observation =
+    typeof v?.observation === "string" ? v.observation : undefined;
+
+  return { id, date, time, location, companions, startTime, endTime, isFinalized, observation };
+}
+/* ============================================= */
+
 export default function useVisits() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [locations, setLocations] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Finalizar visita
-  const finalizeVisit = async (
+  // Finaliza (grava hora real e companheiros reais)
+  const finalizeVisit = (
     id: string,
     payload: { startTime: string; endTime: string; realCompanions: string[] }
   ) => {
-    const updates = {
-      start_time: payload.startTime,
-      end_time: payload.endTime,
-      is_finalized: true,
-      companions: payload.realCompanions.map((name, i) => ({
-        id: `${id}-real-${i}`,
-        name: name.trim(),
-      })),
-    };
-    const { error } = await supabase.from("visits").update(updates).eq("id", id);
-    if (error) console.error("❌ Erro ao finalizar visita:", error.message);
-
     setVisits((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, ...normalizeVisit(updates, 0) } : v))
+      prev.map((v) =>
+        v.id === id
+          ? {
+              ...v,
+              startTime: payload.startTime,
+              endTime: payload.endTime,
+              isFinalized: true,
+              companions: payload.realCompanions.map((name, i) => ({
+                id: `${id}-real-${i}`,
+                name: name.trim(),
+              })),
+            }
+          : v
+      )
     );
   };
 
-  // Atualizar visita
-  const updateVisit = async (id: string, updated: Partial<Visit>) => {
-    const payload = {
-      date: updated.date,
-      time: updated.time,
-      observation: updated.observation,
-      start_time: updated.startTime,
-      end_time: updated.endTime,
-      is_finalized: updated.isFinalized ?? false,
-      companions: updated.companions ?? [],
-      location_id: updated.location?.id ?? "loc-unknown",
-      location_name: updated.location?.name ?? "Local",
-      location_address: updated.location?.address ?? "",
-    };
-    const { error } = await supabase.from("visits").update(payload).eq("id", id);
-    if (error) {
-      console.error("❌ Erro ao atualizar visita:", error.message);
-    } else {
-      setVisits((prev) => prev.map((v) => (v.id === id ? { ...v, ...updated } : v)));
-    }
+  // Atualiza uma visita existente
+  const updateVisit = (id: string, updated: Partial<Visit>) => {
+    setVisits((prev) => prev.map((v) => (v.id === id ? { ...v, ...updated } : v)));
   };
 
-  // Adicionar visita
-  const addVisit = async (data: Partial<Visit>) => {
+  // Adiciona uma nova visita (usado em Configurar -> "Adicionar como nova visita")
+  const addVisit = (data: Partial<Visit>) => {
+    const newId = `v${Date.now()}`;
+    const safeDate = onlyDate(data.date) || onlyDate(new Date().toISOString());
+    const safeTime = onlyTime(data.time) || "00:00";
+    const safeLocation =
+      data.location ?? {
+        id: "loc-unknown",
+        name: "Local",
+        address: "",
+      };
+
     const newVisit: Visit = {
-      id: crypto.randomUUID(),
-      date: data.date!,
-      time: data.time!,
-      companions: data.companions ?? [],
+      id: newId,
+      date: safeDate,
+      time: safeTime,
+      location: {
+        id: safeLocation.id ?? "loc-unknown",
+        name: safeLocation.name ?? "Local",
+        address: safeLocation.address ?? "",
+      },
+      companions: (data.companions ?? []).map((c, i) => ({
+        id: c.id ?? `${newId}-c${i}`,
+        name: c.name,
+      })),
       observation: data.observation,
-      location: data.location ?? { id: "loc-unknown", name: "Local", address: "" },
     };
-    const payload = {
-      id: newVisit.id,
-      date: newVisit.date,
-      time: newVisit.time,
-      observation: newVisit.observation,
-      companions: newVisit.companions,
-      location_id: newVisit.location?.id ?? "loc-unknown",
-      location_name: newVisit.location?.name ?? "Local",
-      location_address: newVisit.location?.address ?? "",
-    };
-    const { error } = await supabase.from("visits").insert([payload]);
-    if (error) {
-      console.error("❌ Erro ao adicionar visita:", error.message);
-    } else {
-      setVisits((prev) => [...prev, newVisit]);
-    }
+
+    setVisits((prev) => [...prev, newVisit]);
+
+    // mantém lista de locais única
+    setLocations((prev) => {
+      const map = new Map(prev.map((l) => [l.id, l]));
+      map.set(newVisit.location?.id ?? "loc-unknown", {
+        id: newVisit.location?.id ?? "loc-unknown",
+        name: newVisit.location?.name ?? "Local",
+      });
+      return Array.from(map.values());
+    });
   };
 
-  // Carregar visitas
   useEffect(() => {
     async function fetchVisits() {
       try {
-        const { data, error } = await supabase
-          .from("visits")
-          .select("*")
-          .order("date", { ascending: true });
+        const res = await fetch("/api/visits", {
+          headers: { Accept: "application/json" },
+        });
 
-        if (error) throw error;
-        const normalized: Visit[] = (data || []).map((v, i) => normalizeVisit(v, i));
+        if (!res.ok) {
+          console.warn(`[visits] API retornou status ${res.status}. Usando dados mock.`);
+          throw new Error(`bad status ${res.status}`);
+        }
+
+        let data: any = null;
+        try {
+          data = await res.json();
+        } catch {
+          console.warn("[visits] Resposta sem JSON. Usando dados mock.");
+          throw new Error("no json");
+        }
+
+        const normalized: Visit[] = (Array.isArray(data) ? data : []).map(
+          (v, i) => normalizeVisit(v, i)
+        );
         setVisits(normalized);
 
         const uniqueLocs = [
@@ -171,15 +193,127 @@ export default function useVisits() {
         ]
           .filter(Boolean)
           .map((l: any) => ({ id: l.id ?? "", name: l.name ?? "Local" }));
+
         setLocations(uniqueLocs as any);
-      } catch (err: any) {
-        console.error("❌ Erro ao carregar visitas:", err.message);
+      } catch {
+        // ===== MOCK com 7 visitas =====
+        const mock: Visit[] = [
+          {
+            id: "1",
+            date: "2024-09-15",
+            time: "17:00",
+            location: {
+              id: "loc1",
+              name: "CLÍNICA EVOLUÇÃO",
+              address: "Rua Mariz e Barros, Nº 430 – Praça da Bandeira",
+            },
+            companions: [{ id: "c1", name: "Jefferson" }, { id: "c2", name: "Sara" }],
+          },
+          {
+            id: "2",
+            date: "2024-09-16",
+            time: "15:30",
+            location: {
+              id: "loc2",
+              name: "VILA SERENA",
+              address: "Rua Pedro Guedes, Nº 63 – Maracanã",
+            },
+            companions: [
+              { id: "c3", name: "João Bosco" },
+              { id: "c1", name: "Jefferson" },
+              { id: "c2", name: "Sara" },
+            ],
+          },
+          {
+            id: "3",
+            date: "2024-09-22",
+            time: "16:00",
+            location: {
+              id: "loc3",
+              name: "HOSPITAL SÃO FRANCISCO NA PROVIDÊNCIA DE DEUS",
+              address: "Rua Conde de Bonfim, Nº 1030 – Tijuca",
+            },
+            companions: [{ id: "c3", name: "João Bosco" }, { id: "c4", name: "Roberto" }],
+          },
+          {
+            id: "4",
+            date: "2024-09-24",
+            time: "16:00",
+            location: {
+              id: "loc3",
+              name: "HOSPITAL SÃO FRANCISCO NA PROVIDÊNCIA DE DEUS",
+              address: "Rua Conde de Bonfim, Nº 1030 – Tijuca",
+            },
+            companions: [
+              { id: "c3", name: "João Bosco" },
+              { id: "c4", name: "Roberto" },
+              { id: "c5", name: "Sidney" },
+            ],
+          },
+          {
+            id: "5",
+            date: "2024-09-01",
+            time: "15:30",
+            location: {
+              id: "loc4",
+              name: "CLÍNICA DA GÁVEA – UNIDADE TIJUCA",
+              address: "Rua Dr. Pereira dos Santos, Nº 18 – Tijuca",
+            },
+            companions: [
+              { id: "c1", name: "Jefferson" },
+              { id: "c2", name: "Sara" },
+              { id: "c6", name: "Danilo" },
+              { id: "c7", name: "Carlão" },
+            ],
+          },
+          {
+            id: "6",
+            date: "2024-09-17",
+            time: "19:30",
+            location: {
+              id: "loc5",
+              name: "HOSPITAL CASA MENSSANA",
+              address: "Rua Marechal Jofre, Nº 30 – Grajaú",
+            },
+            companions: [
+              { id: "c8", name: "Cadu" },
+              { id: "c9", name: "Henrique R." },
+              { id: "c10", name: "Mariana" },
+            ],
+          },
+          {
+            id: "7",
+            date: "2024-09-24",
+            time: "16:30",
+            location: {
+              id: "loc2",
+              name: "VILA SERENA",
+              address: "Rua Pedro Guedes, Nº 63 – Maracanã",
+            },
+            companions: [
+              { id: "c11", name: "Aypepe" },
+              { id: "c12", name: "Pedro H." },
+              { id: "c3", name: "João Bosco" },
+            ],
+          },
+        ];
+
+        setVisits(mock);
+        setLocations([
+          { id: "loc1", name: "CLÍNICA EVOLUÇÃO" },
+          { id: "loc2", name: "VILA SERENA" },
+          { id: "loc3", name: "HOSPITAL SÃO FRANCISCO NA PROVIDÊNCIA DE DEUS" },
+          { id: "loc4", name: "CLÍNICA DA GÁVEA – UNIDADE TIJUCA" },
+          { id: "loc5", name: "HOSPITAL CASA MENSSANA" },
+        ]);
       } finally {
         setIsLoading(false);
       }
     }
+
     fetchVisits();
   }, []);
 
+  // >>>>>> AQUI FORA do useEffect <<<<<<
   return { visits, locations, isLoading, finalizeVisit, updateVisit, addVisit };
 }

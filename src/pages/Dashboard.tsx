@@ -275,7 +275,7 @@ export default function Dashboard() {
                     <VisitInlineConfig
                       key={v.id}
                       visit={v}
-                      onSave={async (upd) => await updateVisit(v.id, upd)}
+                      onSave={(upd) => updateVisit(v.id, upd)}
                       onAdd={(payload) =>
                         addVisit({
                           date: payload.date,
