@@ -1,6 +1,6 @@
 // src/hooks/useVisits.ts
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 
 export interface Visit {
   id: string;
@@ -95,12 +95,25 @@ export default function useVisits() {
         name: name.trim(),
       })),
     };
-    const { error } = await supabase.from("visits").update(updates).eq("id", id);
-    if (error) console.error("❌ Erro ao finalizar visita:", error.message);
 
-    setVisits((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, ...normalizeVisit(updates, 0) } : v))
-    );
+    const { error } = await supabase.from("visits").update(updates).eq("id", id);
+    if (error) {
+      console.error("❌ Erro ao finalizar visita:", error.message);
+    } else {
+      setVisits((prev) =>
+        prev.map((v) =>
+          v.id === id
+            ? {
+                ...v,
+                startTime: payload.startTime,
+                endTime: payload.endTime,
+                isFinalized: true,
+                companions: updates.companions,
+              }
+            : v
+        )
+      );
+    }
   };
 
   // Atualizar visita
@@ -117,11 +130,18 @@ export default function useVisits() {
       location_name: updated.location?.name ?? "Local",
       location_address: updated.location?.address ?? "",
     };
+
     const { error } = await supabase.from("visits").update(payload).eq("id", id);
     if (error) {
       console.error("❌ Erro ao atualizar visita:", error.message);
     } else {
-      setVisits((prev) => prev.map((v) => (v.id === id ? { ...v, ...updated } : v)));
+      setVisits((prev) =>
+        prev.map((v) =>
+          v.id === id
+            ? { ...v, ...updated }
+            : v
+        )
+      );
     }
   };
 
@@ -135,6 +155,7 @@ export default function useVisits() {
       observation: data.observation,
       location: data.location ?? { id: "loc-unknown", name: "Local", address: "" },
     };
+
     const payload = {
       id: newVisit.id,
       date: newVisit.date,
@@ -145,6 +166,7 @@ export default function useVisits() {
       location_name: newVisit.location?.name ?? "Local",
       location_address: newVisit.location?.address ?? "",
     };
+
     const { error } = await supabase.from("visits").insert([payload]);
     if (error) {
       console.error("❌ Erro ao adicionar visita:", error.message);
@@ -163,6 +185,7 @@ export default function useVisits() {
           .order("date", { ascending: true });
 
         if (error) throw error;
+
         const normalized: Visit[] = (data || []).map((v, i) => normalizeVisit(v, i));
         setVisits(normalized);
 
