@@ -1,14 +1,21 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
+interface Visita {
+  id: string
+  date: string
+  time: string
+  location_id: string
+}
+
 export default function Index() {
-  const [visitas, setVisitas] = useState<any[]>([])
+  const [visitas, setVisitas] = useState<Visita[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function carregarVisitas() {
       const { data, error } = await supabase
-        .from('visits') // tabela no banco
+        .from('visits')
         .select('id, date, time, location_id')
 
       if (error) {
@@ -21,6 +28,15 @@ export default function Index() {
 
     carregarVisitas()
   }, [])
+
+  function formatDate(dateStr: string) {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
 
   if (loading) {
     return <p>Carregando visitas...</p>
@@ -35,7 +51,7 @@ export default function Index() {
         <ul>
           {visitas.map((visita) => (
             <li key={visita.id}>
-              📅 {visita.date} ⏰ {visita.time} 🔗 Local ID: {visita.location_id}
+              📅 {formatDate(visita.date)} ⏰ {visita.time} 🔗 Local ID: {visita.location_id}
             </li>
           ))}
         </ul>
@@ -43,4 +59,3 @@ export default function Index() {
     </div>
   )
 }
-

@@ -1,8 +1,13 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-// Pega as variáveis do .env
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string
+const url = import.meta.env.VITE_SUPABASE_URL;
+const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Cria o cliente Supabase
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// debug leve (não logue a chave completa)
+console.log('[ENV] hasURL?', !!url, 'hasAnon?', !!anon);
+
+export const supabase = createClient(url!, anon!, {
+  auth: { persistSession: false },
+});
+
+

@@ -1,20 +1,20 @@
-// src/hooks/useVisits.ts
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "../lib/supabase";
+
 
 export interface Visit {
   id: string;
   date: string;
   time: string;
   location?: { id: string; name: string; address: string };
-  companions?: { id: string; name: string; cost?: number }[];
+  companions?: { id: string; name: string }[];
   startTime?: string;
   endTime?: string;
   isFinalized?: boolean;
   observation?: string;
 }
 
-/* Helpers */
+/* ========== Helpers ========== */
 function onlyDate(input?: string): string {
   if (!input) return "";
   const ymd = String(input).split("T")[0];
@@ -22,6 +22,7 @@ function onlyDate(input?: string): string {
   if (!y || !m || !d) return "";
   return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
+
 function onlyTime(input?: string): string {
   if (!input) return "";
   return String(input).slice(0, 5);
@@ -29,23 +30,17 @@ function onlyTime(input?: string): string {
 
 function normalizeVisit(v: any, idx: number): Visit {
   const id = String(v?.id ?? idx);
+
   const location = {
-    id: v?.locations?.id ?? "loc-unknown",
-    name: v?.locations?.name ?? "Local",
-    address: v?.locations?.address ?? "",
+    id: v?.fk_visit_location?.id ?? "loc-unknown",
+    name: v?.fk_visit_location?.name ?? "Local",
+    address: v?.fk_visit_location?.address ?? "",
   };
 
-  const companions =
-    (v?.visit_companions ?? []).map((vc: any, i: number) => ({
-      id: vc?.companions?.id ?? `${id}-c${i}`,
-      name: vc?.companions?.name ?? "Companheiro",
-      cost:
-        typeof vc?.cost === "number"
-          ? vc.cost
-          : vc?.cost != null
-          ? Number(vc.cost)
-          : undefined,
-    })) ?? [];
+  const companions = (v?.visit_companions ?? []).map((vc: any, i: number) => ({
+    id: vc.companions?.id ?? `${id}-c${i}`,
+    name: vc.companions?.name ?? "Companheiro",
+  }));
 
   return {
     id,
@@ -59,12 +54,11 @@ function normalizeVisit(v: any, idx: number): Visit {
     observation: typeof v?.notes === "string" ? v.notes : undefined,
   };
 }
+/* ================================= */
 
 export default function useVisits() {
   const [visits, setVisits] = useState<Visit[]>([]);
-  const [locations, setLocations] = useState<{ id: string; name: string }[]>(
-    []
-  );
+  const [locations, setLocations] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const finalizeVisit = (
@@ -115,7 +109,6 @@ export default function useVisits() {
       companions: (data.companions ?? []).map((c, i) => ({
         id: c.id ?? `${newId}-c${i}`,
         name: c.name,
-        cost: c.cost,
       })),
       observation: data.observation,
     };
@@ -132,10 +125,7 @@ export default function useVisits() {
     });
   };
 
-  async function ensureCompanionsExist(
-    names: string[]
-  ): Promise<string[]> {
-    if (names.length === 0) return [];
+  const ensureCompanionsExist = async (names: string[]): Promise<string[]> => {
     const { data: existing, error } = await supabase
       .from("companions")
       .select("id, name");
@@ -145,12 +135,8 @@ export default function useVisits() {
       return [];
     }
 
-    const existingMap = new Map(
-      (existing ?? []).map((c) => [c.name.trim().toLowerCase(), c.id])
-    );
-    const newNames = names.filter(
-      (name) => !existingMap.has(name.trim().toLowerCase())
-    );
+    const existingMap = new Map((existing ?? []).map((c) => [c.name.trim().toLowerCase(), c.id]));
+    const newNames = names.filter((name) => !existingMap.has(name.trim().toLowerCase()));
 
     let newIds: string[] = [];
 
@@ -167,23 +153,21 @@ export default function useVisits() {
       newIds = (inserted ?? []).map((c) => c.id);
     }
 
-    // Retorna na mesma ordem de 'names'
-    return names.map((name, idx) => {
+    const allIds = names.map((name) => {
       const key = name.trim().toLowerCase();
-      return existingMap.get(key) ?? newIds[idx] ?? "";
+      return existingMap.get(key) ?? newIds.find((id) => id);
     });
-  }
 
-  // 🔧 ALTERADO: agora aceita { name, cost? }
+    return allIds.filter(Boolean);
+  };
+
   const saveVisitChanges = async (
     id: string,
     observation: string,
-    companionEntries: { name: string; cost?: number }[]
+    companionNames: string[]
   ) => {
-    const names = (companionEntries ?? []).map((e) => e.name.trim());
-    const companionIds = await ensureCompanionsExist(names);
+    const companionIds = await ensureCompanionsExist(companionNames);
 
-    // Atualiza observação
     const { error: updateError } = await supabase
       .from("visits")
       .update({ notes: observation })
@@ -194,29 +178,22 @@ export default function useVisits() {
       return;
     }
 
-    // Limpa associações antigas
-    await supabase.from("visit_companions").delete().eq("visit_id", id);
+    await supabase
+      .from("visit_companions")
+      .delete()
+      .eq("visit_id", id);
 
-    // Reinsere com custo (se houver)
-    const payload = companionIds
-      .map((companion_id, i) => ({
-        visit_id: id,
-        companion_id,
-        cost:
-          typeof companionEntries[i]?.cost === "number"
-            ? companionEntries[i].cost
-            : null,
-      }))
-      .filter((row) => row.companion_id);
+    const payload = companionIds.map((companionId) => ({
+      visit_id: id,
+      companion_id: companionId,
+    }));
 
-    if (payload.length > 0) {
-      const { error: insertError } = await supabase
-        .from("visit_companions")
-        .insert(payload);
+    const { error: insertError } = await supabase
+      .from("visit_companions")
+      .insert(payload);
 
-      if (insertError) {
-        console.warn("[saveVisitChanges] Erro ao inserir companheiros:", insertError.message);
-      }
+    if (insertError) {
+      console.warn("[saveVisitChanges] Erro ao inserir companheiros:", insertError.message);
     }
   };
 
@@ -241,17 +218,17 @@ export default function useVisits() {
 
     const newVisitId = data[0].id;
 
-    const payload = companionIds
-      .filter(Boolean)
-      .map((companion_id) => ({ visit_id: newVisitId, companion_id }));
+    const payload = companionIds.map((companionId) => ({
+      visit_id: newVisitId,
+      companion_id: companionId,
+    }));
 
-    if (payload.length > 0) {
-      const { error: insertError } = await supabase
-        .from("visit_companions")
-        .insert(payload);
-      if (insertError) {
-        console.warn("[createNewVisit] Erro ao inserir companheiros:", insertError.message);
-      }
+    const { error: insertError } = await supabase
+      .from("visit_companions")
+      .insert(payload);
+
+    if (insertError) {
+      console.warn("[createNewVisit] Erro ao inserir companheiros:", insertError.message);
     }
 
     addVisit({
@@ -259,10 +236,7 @@ export default function useVisits() {
       date,
       time,
       location: locations.find((l) => l.id === location_id),
-      companions: companionNames.map((name, i) => ({
-        id: companionIds[i],
-        name,
-      })),
+      companions: companionNames.map((name, i) => ({ id: companionIds[i], name })),
       observation,
     });
   };
@@ -280,29 +254,28 @@ export default function useVisits() {
             end_time,
             isfinalized,
             notes,
-            locations:location_id(id, name, address),
+            fk_visit_location(id, name, address),
             visit_companions(
-              cost,
               companions(id, name)
             )
           `);
-
+  
         if (error) {
           console.warn("[visits] Erro ao buscar dados do Supabase:", error.message);
           throw error;
         }
-
+  
         const normalized: Visit[] = (Array.isArray(data) ? data : []).map(
           (v, i) => normalizeVisit(v, i)
         );
         setVisits(normalized);
-
+  
         const uniqueLocs = [
           ...new Map(normalized.map((v) => [v.location?.id, v.location])).values(),
         ]
           .filter(Boolean)
           .map((l: any) => ({ id: l.id ?? "", name: l.name ?? "Local" }));
-
+  
         setLocations(uniqueLocs);
       } catch (err) {
         console.warn("[visits] Falha ao buscar visitas. Nenhum dado carregado.");
@@ -310,10 +283,10 @@ export default function useVisits() {
         setIsLoading(false);
       }
     }
-
+  
     fetchVisits();
   }, []);
-
+  
   return {
     visits,
     locations,
@@ -321,7 +294,7 @@ export default function useVisits() {
     finalizeVisit,
     updateVisit,
     addVisit,
-    saveVisitChanges, // <- agora aceita {name, cost}
+    saveVisitChanges,
     createNewVisit,
   };
 }

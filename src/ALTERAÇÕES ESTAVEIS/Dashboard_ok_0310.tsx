@@ -11,9 +11,14 @@ export default function Dashboard() {
   const [selectedLocal, setSelectedLocal] = useState<string>("all");
   const [query, setQuery] = useState<string>("");
 
-  // 🔐 Persistência simples
-  const STORAGE = { local: "filters.local", month: "filters.month", q: "filters.query" };
+  // 🔐 Persistência simples em localStorage
+  const STORAGE = {
+    local: "filters.local",
+    month: "filters.month",
+    q: "filters.query",
+  };
 
+  // carrega filtros salvos ao montar
   useEffect(() => {
     const sl = localStorage.getItem(STORAGE.local);
     const sm = localStorage.getItem(STORAGE.month);
@@ -23,9 +28,17 @@ export default function Dashboard() {
     if (sq) setQuery(sq);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => { localStorage.setItem(STORAGE.local, selectedLocal); }, [selectedLocal]);
-  useEffect(() => { localStorage.setItem(STORAGE.month, selectedMonth); }, [selectedMonth]);
-  useEffect(() => { localStorage.setItem(STORAGE.q, query); }, [query]);
+
+  // salva a cada mudança
+  useEffect(() => {
+    localStorage.setItem(STORAGE.local, selectedLocal);
+  }, [selectedLocal]);
+  useEffect(() => {
+    localStorage.setItem(STORAGE.month, selectedMonth);
+  }, [selectedMonth]);
+  useEffect(() => {
+    localStorage.setItem(STORAGE.q, query);
+  }, [query]);
 
   const clearFilters = () => {
     setSelectedLocal("all");
@@ -33,7 +46,7 @@ export default function Dashboard() {
     setQuery("");
   };
 
-  // Locais para o filtro
+  // derive lista de locais a partir das visitas carregadas
   const locationOptions = useMemo(() => {
     const set = new Set<string>();
     (visits || []).forEach((v) => {
@@ -43,7 +56,7 @@ export default function Dashboard() {
     return ["all", ...Array.from(set)];
   }, [visits]);
 
-  // Meses pt-BR
+  // meses pt-BR
   const MONTHS = [
     { value: "all", label: "Todos os meses" },
     { value: "01", label: "janeiro" },
@@ -60,11 +73,10 @@ export default function Dashboard() {
     { value: "12", label: "dezembro" },
   ];
 
-  // ===== edição / salvar =====
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
 
-  // toast
+  // toast “Edição salva!”
   const [savedVisitId, setSavedVisitId] = useState<string | null>(null);
   const showSaved = (id: string) => {
     setSavedVisitId(id);
@@ -77,22 +89,26 @@ export default function Dashboard() {
     setEditingId(visit.id);
     setFormData({
       date: visit.date,
-      time: visit.time,
-      endTime: toHHMM((visit as any).endTime),
+      time: visit.time, // Hora Início
+      endTime: toHHMM((visit as any).endTime), // Hora Final Visita
       notes: visit.observation || "",
       companions:
         visit.companions?.map((c: any) => ({
           name: c.name,
           cost: c?.cost != null ? String(c.cost).replace(".", ",") : "",
         })) || [],
-      _locationName: visit.location?.name || "",
+      _locationName: visit.location?.name || "", // mostrar Local
     });
   };
 
-  // helpers moeda
+  // Helpers de moeda
   function parseCurrencyBR(input: string): number | undefined {
     if (input == null) return undefined;
-    const s = String(input).replace(/\s+/g, "").replace(/^[Rr]\$?/, "").replace(/\./g, "").replace(",", ".");
+    const s = String(input)
+      .replace(/\s+/g, "")
+      .replace(/^[Rr]\$?/, "")
+      .replace(/\./g, "")
+      .replace(",", ".");
     const n = parseFloat(s);
     return Number.isFinite(n) ? n : undefined;
   }
@@ -109,30 +125,48 @@ export default function Dashboard() {
     }));
     await saveVisitChanges(id, formData.notes, entries);
 
-    if (formData.endTime) await supabase.from("visits").update({ end_time: formData.endTime }).eq("id", id);
-    else await supabase.from("visits").update({ end_time: null }).eq("id", id);
+    if (formData.endTime) {
+      await supabase.from("visits").update({ end_time: formData.endTime }).eq("id", id);
+    } else {
+      await supabase.from("visits").update({ end_time: null }).eq("id", id);
+    }
 
     updateVisit(id, {
       date: formData.date,
       time: formData.time,
       observation: formData.notes,
       endTime: formData.endTime || undefined,
-      companions: entries.map((e: any, i: number) => ({ id: `${id}-c${i}`, name: e.name, cost: e.cost })),
+      companions: entries.map((e: any, i: number) => ({
+        id: `${id}-c${i}`,
+        name: e.name,
+        cost: e.cost,
+      })),
     });
+
     setEditingId(null);
     showSaved(id);
   };
 
+  // Finalizar visita
   const handleFinalize = async (id: string) => {
     const pad = (n: number) => String(n).padStart(2, "0");
     const now = new Date();
     const nowHHMM = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
     const start = formData.time && String(formData.time).length >= 4 ? formData.time : nowHHMM;
     const end = formData.endTime && String(formData.endTime).length >= 4 ? formData.endTime : nowHHMM;
 
-    await supabase.from("visits").update({ time: start, end_time: end, isfinalized: true }).eq("id", id);
+    await supabase
+      .from("visits")
+      .update({ time: start, end_time: end, isfinalized: true })
+      .eq("id", id);
 
-    updateVisit(id, { time: start, endTime: end, isFinalized: true });
+    updateVisit(id, {
+      time: start,
+      endTime: end,
+      isFinalized: true,
+    });
+
     setEditingId(null);
     showSaved(id);
   };
@@ -144,47 +178,61 @@ export default function Dashboard() {
     }));
   };
 
-  // ====== filtros aplicados ======
+  // ====== filtragem das visitas ======
   const filteredVisits = useMemo(() => {
     const q = query.trim().toLowerCase();
+
     return (visits || []).filter((v) => {
       if (selectedMonth !== "all") {
         const dParts = (v.date || "").split("-");
         const monthFromDate = dParts.length >= 2 ? dParts[1] : null;
         if (!monthFromDate || monthFromDate !== selectedMonth) return false;
       }
+
       if (selectedLocal !== "all") {
         const locName = v.location?.name?.trim() || "";
         if (locName !== selectedLocal) return false;
       }
+
       if (q) {
         const obs = (v.observation || "").toLowerCase();
-        const compNames = (v.companions || []).map((c: any) => (c?.name || "").toLowerCase()).join(" ");
+        const compNames = (v.companions || [])
+          .map((c: any) => (c?.name || "").toLowerCase())
+          .join(" ");
         if (!obs.includes(q) && !compNames.includes(q)) return false;
       }
+
       return true;
     });
   }, [visits, selectedMonth, selectedLocal, query]);
 
-  /* ===== Painel ===== */
+  /* =========================
+     Painel de dados (toggle)
+     ========================= */
   const [showPanel, setShowPanel] = useState<boolean>(false);
-  const currentMonth = new Date().toISOString().slice(5, 7);
+
+  const currentMonth = new Date().toISOString().slice(5, 7); // "MM"
   const monthForStats = selectedMonth !== "all" ? selectedMonth : currentMonth;
 
   const visitsInMonth = useMemo(() => {
-    return filteredVisits.filter((v) => (v.date || "").split("-")[1] === monthForStats);
+    return filteredVisits.filter((v) => {
+      const m = (v.date || "").split("-")[1];
+      return m === monthForStats;
+    });
   }, [filteredVisits, monthForStats]);
 
   const byCompanion = useMemo(() => {
     const map = new Map<string, number>();
     for (const v of filteredVisits) {
-      for (const c of v.companions || []) {
+      for (const c of (v.companions || [])) {
         const name = (c?.name || "").trim();
         if (!name) continue;
         map.set(name, (map.get(name) || 0) + 1);
       }
     }
-    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ name, count }));
   }, [filteredVisits]);
 
   const byLocation = useMemo(() => {
@@ -194,11 +242,14 @@ export default function Dashboard() {
       if (!name) continue;
       map.set(name, (map.get(name) || 0) + 1);
     }
-    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ name, count }));
   }, [filteredVisits]);
 
-  // ====== Semana ======
+  // ========= Seletor de semana =========
   const [weekOffset, setWeekOffset] = useState<number>(0);
+
   const weekBounds = useMemo(() => {
     const base = new Date();
     base.setDate(base.getDate() + weekOffset * 7);
@@ -207,9 +258,11 @@ export default function Dashboard() {
     const start = new Date(base);
     start.setHours(0, 0, 0, 0);
     start.setDate(start.getDate() - deltaToMonday);
+
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
     end.setHours(23, 59, 59, 999);
+
     return { start, end };
   }, [weekOffset]);
 
@@ -222,10 +275,13 @@ export default function Dashboard() {
   }, [filteredVisits, weekBounds]);
 
   // helpers
-  const fmtDM = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+  const fmtDM = (d: Date) =>
+    `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
   const dmFromYYYYMMDD = (s?: string) => {
     if (!s) return "";
-    const [y, m, d] = s.split("-");
+    const parts = s.split("-");
+    if (parts.length < 3) return "";
+    const [y, m, d] = parts;
     return `${d.padStart(2, "0")}/${m.padStart(2, "0")}`;
   };
   const fmtDMY = (d: Date) =>
@@ -233,17 +289,24 @@ export default function Dashboard() {
   const hhmm = (s?: string) => (s ? String(s).slice(0, 5) : "");
 
   const byCompanionWeek = useMemo(() => {
-    const map = new Map<string, { count: number; locations: Set<string>; details: string[] }>();
+    const map = new Map<
+      string,
+      { count: number; locations: Set<string>; details: string[] }
+    >();
     for (const v of weekVisits) {
       const loc = (v.location?.name || "").trim();
       const labelDate = dmFromYYYYMMDD(v.date);
       const sched = hhmm(v.time);
       const finalized = hhmm((v as any).endTime);
       const detail = finalized ? `${labelDate} ${sched} → ${finalized}` : `${labelDate} ${sched}`;
-      for (const c of v.companions || []) {
+
+      for (const c of (v.companions || [])) {
         const name = (c?.name || "").trim();
         if (!name) continue;
-        if (!map.has(name)) map.set(name, { count: 0, locations: new Set(), details: [] });
+
+        if (!map.has(name)) {
+          map.set(name, { count: 0, locations: new Set(), details: [] });
+        }
         const entry = map.get(name)!;
         entry.count += 1;
         if (loc) entry.locations.add(loc);
@@ -251,11 +314,16 @@ export default function Dashboard() {
       }
     }
     return Array.from(map.entries())
-      .map(([name, val]) => ({ name, count: val.count, locations: Array.from(val.locations.values()).sort(), details: val.details }))
+      .map(([name, val]) => ({
+        name,
+        count: val.count,
+        locations: Array.from(val.locations.values()).sort(),
+        details: val.details,
+      }))
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
   }, [weekVisits]);
 
-  /* ======== Custos ======== */
+  /* ======== Custos (mantidos) ======== */
   const weekCostByCompanion = useMemo(() => {
     const m = new Map<string, number>();
     for (const v of weekVisits) {
@@ -304,16 +372,19 @@ export default function Dashboard() {
     return Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
   }, [monthVisits]);
 
-  const currency = (n: number) => (n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const currency = (n: number) =>
+    (n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-  // último dia finalizado por local
+  /* ✅ NOVO: último dia finalizado por local (considerando filtros) */
   const lastFinalizedByLocation = useMemo(() => {
     const map = new Map<string, Date>();
     for (const v of filteredVisits) {
       const loc = (v.location?.name || "").trim();
       if (!loc) continue;
       const finalized = Boolean((v as any).isFinalized) || Boolean((v as any).endTime);
-      if (!finalized || !v.date) continue;
+      if (!finalized) continue;
+      if (!v.date) continue;
+
       const hh = (v as any).endTime || v.time || "00:00";
       const dt = new Date(`${v.date}T${String(hh).slice(0, 5)}:00`);
       const prev = map.get(loc);
@@ -324,7 +395,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
+      {/* ===== Header (novo) ===== */}
       <header className="bg-blue-700 text-white sticky top-0 z-40 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <h3 className="text-white font-semibold tracking-wide text-lg md:text-xl">
@@ -333,12 +404,14 @@ export default function Dashboard() {
         </div>
       </header>
 
+      {/* ===== Main ===== */}
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <h1 className="text-2xl font-bold mb-4">📌 Gestão de Visitas</h1>
 
-          {/* Filtros */}
+          {/* ====== Barra de filtros (Local → Mês → Busca) ====== */}
           <div className="mb-2 grid grid-cols-1 md:grid-cols-5 gap-3">
+            {/* Local */}
             <select
               value={selectedLocal}
               onChange={(e) => setSelectedLocal(e.target.value)}
@@ -352,6 +425,7 @@ export default function Dashboard() {
               ))}
             </select>
 
+            {/* Mês */}
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
@@ -365,6 +439,7 @@ export default function Dashboard() {
               ))}
             </select>
 
+            {/* Busca (observação/companheiro) */}
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -373,26 +448,33 @@ export default function Dashboard() {
               aria-label="Buscar por observação ou companheiro"
             />
 
+            {/* Botões */}
             <div className="flex gap-2">
               <button
                 onClick={clearFilters}
                 className="border rounded px-3 py-2 bg-gray-100 hover:bg-gray-200"
+                aria-label="Limpar filtros"
+                title="Limpar filtros"
               >
                 Limpar filtros
               </button>
+
+              {/* Painel de dados (toggle) */}
               <button
                 onClick={() => setShowPanel((s) => !s)}
                 className="border rounded px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700"
+                aria-label="Alternar painel de dados"
+                title="Painel de dados"
               >
                 {showPanel ? "Ocultar painel" : "Painel de dados"}
               </button>
             </div>
           </div>
 
-          {/* Painel de dados */}
+          {/* Painel de dados (cards + tabelas) */}
           {showPanel && (
             <section className="mb-6">
-              {/* Cards principais (mantidos) */}
+              {/* Cards — VISUAL REFINADO */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="rounded-lg border p-5 bg-blue-50 text-black shadow-sm">
                   <p className="text-base md:text-lg font-semibold">Visitas neste mês</p>
@@ -426,290 +508,298 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Visitas por companheiro / por local — ESTILO AZUL */}
+              {/* Tabelas rápidas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Visitas por companheiro */}
-                <div className="rounded-lg border p-4 bg-blue-50 text-black shadow-sm">
-                  <div className="pb-2 border-b border-blue-200">
-                    <h3 className="font-semibold text-sm md:text-base">Visitas por companheiro</h3>
-                    <p className="text-[11px] md:text-xs text-gray-700">Considera filtros aplicados acima</p>
+                <div className="rounded-lg border bg-white">
+                  <div className="p-4 border-b">
+                    <h3 className="font-semibold">Visitas por companheiro</h3>
+                    <p className="text-xs text-gray-500">
+                      Considera filtros aplicados acima
+                    </p>
                   </div>
-                  <div className="mt-3">
+                  <div className="p-4">
                     {byCompanion.length === 0 ? (
-                      <p className="text-sm text-gray-700">Sem dados.</p>
+                      <p className="text-sm text-gray-500">Sem dados.</p>
                     ) : (
-                      <div className="bg-white rounded border">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-gray-500">
-                              <th className="py-2 px-3">Companheiro</th>
-                              <th className="py-2 px-3 w-24">Visitas</th>
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-500">
+                            <th className="py-1">Companheiro</th>
+                            <th className="py-1 w-24">Visitas</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {byCompanion.map((row) => (
+                            <tr key={row.name} className="border-t">
+                              <td className="py-1">{row.name}</td>
+                              <td className="py-1">{row.count}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {byCompanion.map((row) => (
-                              <tr key={row.name} className="border-t">
-                                <td className="py-2 px-3">{row.name}</td>
-                                <td className="py-2 px-3">{row.count}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
                     )}
                   </div>
                 </div>
 
-                {/* Visitas por local */}
-                <div className="rounded-lg border p-4 bg-blue-50 text-black shadow-sm">
-                  <div className="pb-2 border-b border-blue-200">
-                    <h3 className="font-semibold text-sm md:text-base">Visitas por local</h3>
-                    <p className="text-[11px] md:text-xs text-gray-700">Considera filtros aplicados acima</p>
+                {/* Visitas por local — com coluna “Finalizada (última)” */}
+                <div className="rounded-lg border bg-white">
+                  <div className="p-4 border-b">
+                    <h3 className="font-semibold">Visitas por local</h3>
+                    <p className="text-xs text-gray-500">
+                      Considera filtros aplicados acima
+                    </p>
                   </div>
-                  <div className="mt-3">
+                  <div className="p-4">
                     {byLocation.length === 0 ? (
-                      <p className="text-sm text-gray-700">Sem dados.</p>
+                      <p className="text-sm text-gray-500">Sem dados.</p>
                     ) : (
-                      <div className="bg-white rounded border">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-gray-500">
-                              <th className="py-2 px-3">Local</th>
-                              <th className="py-2 px-3 w-24">Visitas</th>
-                              <th className="py-2 px-3 w-40">Finalizada (última)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {byLocation.map((row) => {
-                              const last = lastFinalizedByLocation.get(row.name);
-                              return (
-                                <tr key={row.name} className="border-t">
-                                  <td className="py-2 px-3">{row.name}</td>
-                                  <td className="py-2 px-3">{row.count}</td>
-                                  <td className="py-2 px-3">{last ? fmtDMY(last) : "—"}</td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-500">
+                            <th className="py-1">Local</th>
+                            <th className="py-1 w-24">Visitas</th>
+                            <th className="py-1 w-40">Finalizada (última)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {byLocation.map((row) => {
+                            const last = lastFinalizedByLocation.get(row.name);
+                            return (
+                              <tr key={row.name} className="border-t">
+                                <td className="py-1">{row.name}</td>
+                                <td className="py-1">{row.count}</td>
+                                <td className="py-1">
+                                  {last ? fmtDMY(last) : "—"}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Visitas na semana por companheiro — ESTILO AZUL */}
-              <div className="rounded-lg border p-4 bg-blue-50 text-black mt-4 shadow-sm">
-                <div className="pb-2 border-b border-blue-200 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              {/* ========= Visitas na semana por companheiro ========= */}
+              <div className="rounded-lg border bg-white mt-4">
+                <div className="p-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div>
-                    <h3 className="font-semibold text-sm md:text-base">
+                    <h3 className="font-semibold">
                       Visitas na semana por companheiro{" "}
-                      <span className="text-[11px] md:text-xs text-gray-700">
+                      <span className="text-xs text-gray-500">
                         ({fmtDM(weekBounds.start)} – {fmtDM(weekBounds.end)})
                       </span>
                     </h3>
-                    <p className="text-[11px] md:text-xs text-gray-700">
+                    <p className="text-xs text-gray-500">
                       Inclui visitas passadas e futuras desta semana, considerando os filtros acima.
                     </p>
                   </div>
+
                   <div className="flex gap-2">
-                    <button onClick={() => setWeekOffset((w) => w - 1)} className="border rounded px-3 py-1 bg-gray-50 hover:bg-gray-100">
+                    <button
+                      onClick={() => setWeekOffset((w) => w - 1)}
+                      className="border rounded px-3 py-1 bg-gray-50 hover:bg-gray-100"
+                    >
                       ⟵ Anterior
                     </button>
-                    <button onClick={() => setWeekOffset(0)} className="border rounded px-3 py-1 bg-gray-50 hover:bg-gray-100">
+                    <button
+                      onClick={() => setWeekOffset(0)}
+                      className="border rounded px-3 py-1 bg-gray-50 hover:bg-gray-100"
+                    >
                       Esta semana
                     </button>
-                    <button onClick={() => setWeekOffset((w) => w + 1)} className="border rounded px-3 py-1 bg-gray-50 hover:bg-gray-100">
+                    <button
+                      onClick={() => setWeekOffset((w) => w + 1)}
+                      className="border rounded px-3 py-1 bg-gray-50 hover:bg-gray-100"
+                    >
                       Próxima ⟶
                     </button>
                   </div>
                 </div>
 
-                <div className="mt-3">
+                <div className="p-4">
                   {byCompanionWeek.length === 0 ? (
-                    <p className="text-sm text-gray-700">Sem dados para a semana selecionada.</p>
+                    <p className="text-sm text-gray-500">Sem dados para a semana selecionada.</p>
                   ) : (
-                    <div className="bg-white rounded border p-3">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="text-left text-gray-500">
-                            <th className="py-2 px-3">Companheiro</th>
-                            <th className="py-2 px-3 w-28">Qtde semana</th>
-                            <th className="py-2 px-3">Datas & horas</th>
-                            <th className="py-2 px-3">Locais</th>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-gray-500">
+                          <th className="py-1">Companheiro</th>
+                          <th className="py-1 w-28">Qtde semana</th>
+                          <th className="py-1">Datas & horas</th>
+                          <th className="py-1">Locais</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {byCompanionWeek.map((row) => (
+                          <tr key={row.name} className="border-t">
+                            <td className="py-1 align-top">{row.name}</td>
+                            <td className="py-1 align-top">{row.count}</td>
+                            <td className="py-1 align-top">
+                              {row.details.length > 0 ? (
+                                <div className="flex flex-col gap-1">
+                                  {row.details.map((d, i) => (
+                                    <span key={i}>{d}</span>
+                                  ))}
+                                </div>
+                              ) : (
+                                "—"
+                              )}
+                            </td>
+                            <td className="py-1 align-top">
+                              {row.locations.length > 0 ? row.locations.join(", ") : "—"}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {byCompanionWeek.map((row) => (
-                            <tr key={row.name} className="border-t">
-                              <td className="py-2 px-3 align-top">{row.name}</td>
-                              <td className="py-2 px-3 align-top">{row.count}</td>
-                              <td className="py-2 px-3 align-top">
-                                {row.details.length > 0 ? (
-                                  <div className="flex flex-col gap-1">
-                                    {row.details.map((d, i) => (<span key={i}>{d}</span>))}
-                                  </div>
-                                ) : ("—")}
-                              </td>
-                              <td className="py-2 px-3 align-top">
-                                {row.locations.length > 0 ? row.locations.join(", ") : "—"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        ))}
+                      </tbody>
+                    </table>
                   )}
                 </div>
               </div>
 
-              {/* CUSTOS — ESTILO AZUL */}
+              {/* ===== CUSTOS ===== */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {/* Semana por companheiro */}
-                <div className="rounded-lg border p-4 bg-blue-50 text-black shadow-sm">
-                  <div className="pb-2 border-b border-blue-200">
-                    <h3 className="font-semibold text-sm md:text-base">
-                      Gastos na semana — por companheiro{" "}
-                      <span className="text-[11px] md:text-xs text-gray-700">
+                {/* Semana: por companheiro */}
+                <div className="rounded-lg border bg-white">
+                  <div className="p-4 border-b">
+                    <h3 className="font-semibold">
+                      Gastos na semana — por companheiro
+                      <span className="text-xs text-gray-500">
+                        {" "}
                         ({fmtDM(weekBounds.start)} – {fmtDM(weekBounds.end)})
                       </span>
                     </h3>
                   </div>
-                  <div className="mt-3">
+                  <div className="p-4">
                     {weekCostByCompanion.length === 0 ? (
-                      <p className="text-sm text-gray-700">Sem dados.</p>
+                      <p className="text-sm text-gray-500">Sem dados.</p>
                     ) : (
-                      <div className="bg-white rounded border">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-gray-500">
-                              <th className="py-2 px-3">Companheiro</th>
-                              <th className="py-2 px-3 w-32">Gasto</th>
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-500">
+                            <th className="py-1">Companheiro</th>
+                            <th className="py-1 w-32">Gasto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {weekCostByCompanion.map(([name, total]) => (
+                            <tr key={name} className="border-t">
+                              <td className="py-1">{name}</td>
+                              <td className="py-1">{currency(total)}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {weekCostByCompanion.map(([name, total]) => (
-                              <tr key={name} className="border-t">
-                                <td className="py-2 px-3">{name}</td>
-                                <td className="py-2 px-3">{currency(total)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
                     )}
                   </div>
                 </div>
 
-                {/* Semana por local */}
-                <div className="rounded-lg border p-4 bg-blue-50 text-black shadow-sm">
-                  <div className="pb-2 border-b border-blue-200">
-                    <h3 className="font-semibold text-sm md:text-base">
-                      Gastos na semana — por local{" "}
-                      <span className="text>[11px] md:text-xs text-gray-700">
+                {/* Semana: por local */}
+                <div className="rounded-lg border bg-white">
+                  <div className="p-4 border-b">
+                    <h3 className="font-semibold">
+                      Gastos na semana — por local
+                      <span className="text-xs text-gray-500">
+                        {" "}
                         ({fmtDM(weekBounds.start)} – {fmtDM(weekBounds.end)})
                       </span>
                     </h3>
                   </div>
-                  <div className="mt-3">
+                  <div className="p-4">
                     {weekCostByLocation.length === 0 ? (
-                      <p className="text-sm text-gray-700">Sem dados.</p>
+                      <p className="text-sm text-gray-500">Sem dados.</p>
                     ) : (
-                      <div className="bg-white rounded border">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-gray-500">
-                              <th className="py-2 px-3">Local</th>
-                              <th className="py-2 px-3 w-32">Gasto</th>
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-500">
+                            <th className="py-1">Local</th>
+                            <th className="py-1 w-32">Gasto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {weekCostByLocation.map(([loc, total]) => (
+                            <tr key={loc} className="border-t">
+                              <td className="py-1">{loc}</td>
+                              <td className="py-1">{currency(total)}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {weekCostByLocation.map(([loc, total]) => (
-                              <tr key={loc} className="border-t">
-                                <td className="py-2 px-3">{loc}</td>
-                                <td className="py-2 px-3">{currency(total)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
                     )}
                   </div>
                 </div>
 
-                {/* Mês por companheiro */}
-                <div className="rounded-lg border p-4 bg-blue-50 text-black shadow-sm">
-                  <div className="pb-2 border-b border-blue-200">
-                    <h3 className="font-semibold text-sm md:text-base">
+                {/* Mês: por companheiro */}
+                <div className="rounded-lg border bg-white">
+                  <div className="p-4 border-b">
+                    <h3 className="font-semibold">
                       Gastos no mês — por companheiro{" "}
-                      <span className="text-[11px] md:text-xs text-gray-700">(mês: {monthForStats})</span>
+                      <span className="text-xs text-gray-500">(mês: {monthForStats})</span>
                     </h3>
                   </div>
-                  <div className="mt-3">
+                  <div className="p-4">
                     {monthCostByCompanion.length === 0 ? (
-                      <p className="text-sm text-gray-700">Sem dados.</p>
+                      <p className="text-sm text-gray-500">Sem dados.</p>
                     ) : (
-                      <div className="bg-white rounded border">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-gray-500">
-                              <th className="py-2 px-3">Companheiro</th>
-                              <th className="py-2 px-3 w-32">Gasto</th>
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-500">
+                            <th className="py-1">Companheiro</th>
+                            <th className="py-1 w-32">Gasto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {monthCostByCompanion.map(([name, total]) => (
+                            <tr key={name} className="border-t">
+                              <td className="py-1">{name}</td>
+                              <td className="py-1">{currency(total)}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {monthCostByCompanion.map(([name, total]) => (
-                              <tr key={name} className="border-t">
-                                <td className="py-2 px-3">{name}</td>
-                                <td className="py-2 px-3">{currency(total)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
                     )}
                   </div>
                 </div>
 
-                {/* Mês por local */}
-                <div className="rounded-lg border p-4 bg-blue-50 text-black shadow-sm">
-                  <div className="pb-2 border-b border-blue-200">
-                    <h3 className="font-semibold text-sm md:text-base">
+                {/* Mês: por local */}
+                <div className="rounded-lg border bg-white">
+                  <div className="p-4 border-b">
+                    <h3 className="font-semibold">
                       Gastos no mês — por local{" "}
-                      <span className="text-[11px] md:text-xs text-gray-700">(mês: {monthForStats})</span>
+                      <span className="text-xs text-gray-500">(mês: {monthForStats})</span>
                     </h3>
                   </div>
-                  <div className="mt-3">
+                  <div className="p-4">
                     {monthCostByLocation.length === 0 ? (
-                      <p className="text-sm text-gray-700">Sem dados.</p>
+                      <p className="text-sm text-gray-500">Sem dados.</p>
                     ) : (
-                      <div className="bg-white rounded border">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-gray-500">
-                              <th className="py-2 px-3">Local</th>
-                              <th className="py-2 px-3 w-32">Gasto</th>
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-500">
+                            <th className="py-1">Local</th>
+                            <th className="py-1 w-32">Gasto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {monthCostByLocation.map(([loc, total]) => (
+                            <tr key={loc} className="border-t">
+                              <td className="py-1">{loc}</td>
+                              <td className="py-1">{currency(total)}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {monthCostByLocation.map(([loc, total]) => (
-                              <tr key={loc} className="border-t">
-                                <td className="py-2 px-3">{loc}</td>
-                                <td className="py-2 px-3">{currency(total)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
                     )}
                   </div>
                 </div>
               </div>
-              {/* Fim custos */}
+              {/* ===== FIM CUSTOS ===== */}
             </section>
           )}
 
-          {/* Cards de visita (edição / visualização) */}
+          {/* Lista de cards (só quando o painel NÃO estiver aberto) */}
           {!showPanel && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredVisits.map((visit) => (
@@ -722,6 +812,7 @@ export default function Dashboard() {
                     <>
                       <h2 className="font-bold text-lg mb-2">Editar Visita</h2>
 
+                      {/* Local (somente leitura) */}
                       <input
                         type="text"
                         value={formData._locationName || ""}
@@ -730,30 +821,44 @@ export default function Dashboard() {
                         title="Local selecionado"
                       />
 
+                      {/* Data */}
                       <input
                         type="date"
                         value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, date: e.target.value })
+                        }
                         className="border p-2 rounded w-full mb-2 text-gray-800"
                       />
 
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">Hora Início</label>
+                      {/* Hora Início */}
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Hora Início
+                      </label>
                       <input
                         type="time"
                         value={formData.time}
-                        onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, time: e.target.value })
+                        }
                         className="border p-2 rounded w-full mb-2 text-gray-800"
                       />
 
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">Hora Final Visita</label>
+                      {/* Hora Final Visita */}
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Hora Final Visita
+                      </label>
                       <input
                         type="time"
                         value={formData.endTime || ""}
-                        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, endTime: e.target.value })
+                        }
                         className="border p-2 rounded w-full mb-2 text-gray-800"
                         title="Hora de finalização"
                       />
 
+                      {/* Adicionar companheiro */}
                       <input
                         type="text"
                         placeholder="Adicionar companheiro e pressionar Enter"
@@ -773,10 +878,13 @@ export default function Dashboard() {
                         }}
                       />
 
+                      {/* Lista: nome + Ajuda de Custo ao lado */}
                       <div className="space-y-2 mb-2">
                         {(formData.companions || []).map((c: any, i: number) => (
                           <div key={i} className="flex items-center gap-2">
-                            <span className="px-2 py-1 rounded bg-blue-100 text-blue-800 text-sm">{c.name}</span>
+                            <span className="px-2 py-1 rounded bg-blue-100 text-blue-800 text-sm">
+                              {c.name}
+                            </span>
                             <input
                               type="text"
                               inputMode="decimal"
@@ -800,21 +908,29 @@ export default function Dashboard() {
                         ))}
                       </div>
 
+                      {/* toast */}
                       {savedVisitId === visit.id && (
                         <div className="text-green-600 text-sm mb-2">Edição salva!</div>
                       )}
 
+                      {/* Observação */}
                       <textarea
                         value={formData.notes}
-                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, notes: e.target.value })
+                        }
                         placeholder="Digite uma observação"
                         className="border p-2 rounded w-full text-gray-800 mb-2"
                       />
 
                       <div className="flex gap-2">
-                        <button onClick={() => handleSave(visit.id)} className="bg-green-600 text-white px-3 py-1 rounded">
+                        <button
+                          onClick={() => handleSave(visit.id)}
+                          className="bg-green-600 text-white px-3 py-1 rounded"
+                        >
                           Salvar
                         </button>
+
                         <button
                           onClick={() => handleFinalize(visit.id)}
                           className="bg-indigo-600 text-white px-3 py-1 rounded"
@@ -840,7 +956,10 @@ export default function Dashboard() {
 
                       <div className="flex flex-wrap gap-2 mb-2">
                         {visit.companions?.map((c) => (
-                          <span key={c.id} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                          <span
+                            key={c.id}
+                            className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
+                          >
                             {c.name}
                             {typeof c.cost === "number" && isFinite(c.cost)
                               ? ` — R$ ${c.cost.toFixed(2).replace(".", ",")}`
@@ -851,11 +970,17 @@ export default function Dashboard() {
 
                       {visit.observation && (
                         <p className="text-gray-600 italic text-base leading-relaxed">
-                          Observação: <span className="text-red-600 not-italic font-normal">{visit.observation}</span>
+                          Observação:{" "}
+                          <span className="text-red-600 not-italic font-normal">
+                            {visit.observation}
+                          </span>
                         </p>
                       )}
 
-                      <button onClick={() => handleEdit(visit)} className="bg-blue-600 text-white px-3 py-1 rounded mt-2">
+                      <button
+                        onClick={() => handleEdit(visit)}
+                        className="bg-blue-600 text-white px-3 py-1 rounded mt-2"
+                      >
                         Editar
                       </button>
                     </>
@@ -867,7 +992,7 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* ===== Footer (novo) ===== */}
       <footer className="bg-blue-700 text-white">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h2 className="text-white font-semibold text-lg md:text-xl leading-snug">
