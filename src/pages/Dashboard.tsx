@@ -2,6 +2,8 @@
 import { useState, useMemo, useEffect } from "react";
 import useVisits from "@/hooks/useVisits";
 import { supabase } from "@/lib/supabaseClient";
+import ChatGemini from "@/components/ChatGemini";
+
 
 // === Formata data no formato brasileiro (corrige -1 dia UTC) ===
 function formatDateBRFull(dateStr?: string): string {
@@ -898,8 +900,7 @@ function parseCurrencyBR(input: string): number | undefined {
                         title="Hora de finalização"
                       />
 
-                     {/* Adicionar companheiro (com autocomplete) */}
- {/* Adicionar companheiro com sugestões automáticas */}
+     {/* Adicionar companheiro com sugestões automáticas */}
 <input
   type="text"
   list="companions-list"
@@ -1045,6 +1046,7 @@ function parseCurrencyBR(input: string): number | undefined {
           </h2>
         </div>
       </footer>
+      <ChatGemini />
     </div>
   );
 }

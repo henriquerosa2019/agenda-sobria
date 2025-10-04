@@ -3,9 +3,24 @@ import { useState, useMemo, useEffect } from "react";
 import useVisits from "@/hooks/useVisits";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function Dashboard() {
-  const { visits, updateVisit, saveVisitChanges } = useVisits();
-
+// === Formata data no formato brasileiro (corrige -1 dia UTC) ===
+function formatDateBRFull(dateStr?: string): string {
+    if (!dateStr) return "";
+    // cria uma data “sem deslocar” o fuso
+    const [year, month, day] = dateStr.split("T")[0].split("-").map(Number);
+    const d = new Date(year, month - 1, day); // local sem UTC offset
+    const str = d.toLocaleDateString("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  
+  export default function Dashboard() {
+    const { visits, companions = [], updateVisit, saveVisitChanges } = useVisits();
+  
   // ====== filtros ======
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedLocal, setSelectedLocal] = useState<string>("all");
@@ -101,36 +116,60 @@ export default function Dashboard() {
     });
   };
 
-  // Helpers de moeda
-  function parseCurrencyBR(input: string): number | undefined {
-    if (input == null) return undefined;
+// Helpers de moeda
+function parseCurrencyBR(input: string): number | undefined {
+    if (!input) return undefined;
     const s = String(input)
+      .trim()
       .replace(/\s+/g, "")
-      .replace(/^[Rr]\$?/, "")
+      .replace(/[Rr]\$?/, "")
       .replace(/\./g, "")
       .replace(",", ".");
     const n = parseFloat(s);
-    return Number.isFinite(n) ? n : undefined;
+    return isFinite(n) ? n : undefined;
   }
+  
   const getCostNumber = (val: unknown): number => {
     if (typeof val === "number" && isFinite(val)) return val;
     const n = parseCurrencyBR(String(val ?? ""));
     return typeof n === "number" && isFinite(n) ? n : 0;
   };
-
+  
+  // Função de formatação (máscara de moeda durante digitação)
+  function formatCurrencyInput(value: string): string {
+    let onlyNums = value.replace(/[^\d]/g, "");
+    if (!onlyNums) return "";
+    while (onlyNums.length < 3) onlyNums = "0" + onlyNums;
+    const intPart = onlyNums.slice(0, -2);
+    const decimalPart = onlyNums.slice(-2);
+    return `R$ ${parseInt(intPart, 10).toLocaleString("pt-BR")},${decimalPart}`;
+  }
+  
+  // Atualiza custo formatado no formData (sem salvar ainda)
+  const handleCostChange = (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
+    const formatted = formatCurrencyInput(e.target.value);
+    const next = [...formData.companions];
+    next[i] = { ...next[i], cost: formatted };
+    setFormData({ ...formData, companions: next });
+  };
+  
   const handleSave = async (id: string) => {
-    const entries = (formData.companions || []).map((c: any) => ({
-      name: String(c.name || "").trim(),
-      cost: parseCurrencyBR(String(c.cost ?? "")),
-    }));
+    const entries = (formData.companions || []).map((c: any) => {
+        const parsedCost = parseCurrencyBR(String(c.cost ?? ""));
+        return {
+          name: String(c.name || "").trim(),
+          cost: parsedCost ?? 0, // garante que vai número
+        };
+      });
+      
     await saveVisitChanges(id, formData.notes, entries);
-
+  
     if (formData.endTime) {
       await supabase.from("visits").update({ end_time: formData.endTime }).eq("id", id);
     } else {
       await supabase.from("visits").update({ end_time: null }).eq("id", id);
     }
-
+  
     updateVisit(id, {
       date: formData.date,
       time: formData.time,
@@ -142,10 +181,11 @@ export default function Dashboard() {
         cost: e.cost,
       })),
     });
-
+  
     setEditingId(null);
     showSaved(id);
   };
+  
 
   // Finalizar visita
   const handleFinalize = async (id: string) => {
@@ -858,25 +898,33 @@ export default function Dashboard() {
                         title="Hora de finalização"
                       />
 
-                      {/* Adicionar companheiro */}
-                      <input
-                        type="text"
-                        placeholder="Adicionar companheiro e pressionar Enter"
-                        className="border p-2 rounded w-full mb-2 text-gray-800"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                            e.preventDefault();
-                            const name = e.currentTarget.value.trim();
-                            if (!formData.companions?.some((x: any) => x.name === name)) {
-                              setFormData({
-                                ...formData,
-                                companions: [...(formData.companions || []), { name, cost: "" }],
-                              });
-                            }
-                            e.currentTarget.value = "";
-                          }
-                        }}
-                      />
+     {/* Adicionar companheiro com sugestões automáticas */}
+<input
+  type="text"
+  list="companions-list"
+  placeholder="Adicionar companheiro e pressionar Enter"
+  className="border p-2 rounded w-full mb-2 text-gray-800"
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && e.currentTarget.value.trim()) {
+      e.preventDefault();
+      const name = e.currentTarget.value.trim();
+      if (!formData.companions?.some((x: any) => x.name === name)) {
+        setFormData({
+          ...formData,
+          companions: [...(formData.companions || []), { name, cost: "" }],
+        });
+      }
+      e.currentTarget.value = "";
+    }
+  }}
+/>
+
+{/* Lista de nomes já existentes */}
+<datalist id="companions-list">
+  {(companions || []).map((c: any) => (
+    <option key={c.id} value={c.name} />
+  ))}
+</datalist>
 
                       {/* Lista: nome + Ajuda de Custo ao lado */}
                       <div className="space-y-2 mb-2">
@@ -888,14 +936,10 @@ export default function Dashboard() {
                             <input
                               type="text"
                               inputMode="decimal"
-                              placeholder="Ajuda de Custo (ex: R$120,00)"
-                              value={c.cost ?? ""}
-                              onChange={(e) => {
-                                const next = [...formData.companions];
-                                next[i] = { ...next[i], cost: e.target.value };
-                                setFormData({ ...formData, companions: next });
-                              }}
-                              className="border p-2 rounded text-sm w-44"
+                                 placeholder="Ajuda de Custo (ex: R$15,00)"
+                                 value={c.cost ?? ""}
+                                    onChange={(e) => handleCostChange(e, i)}
+                                    className="border p-2 rounded text-sm w-44"
                             />
                             <button
                               onClick={() => removeCompanion(c.name)}
@@ -945,7 +989,7 @@ export default function Dashboard() {
                       <h2 className="font-bold text-lg">{visit.location?.name}</h2>
                       <p className="text-gray-700 text-base">{visit.location?.address}</p>
                       <p className="text-gray-700 text-base mb-2">
-                        📅 {visit.date} às {visit.time}
+                      📅 {formatDateBRFull(visit.date)} às {visit.time}
                         {(visit as any).endTime ? ` → ${(visit as any).endTime}` : ""}
                         {(visit as any).isFinalized || (visit as any).endTime ? (
                           <span className="ml-2 inline-flex items-center rounded bg-green-100 text-green-800 px-2 py-0.5 text-xs font-medium">
