@@ -1,0 +1,830 @@
+{
+  "companions": [
+    {
+      "id": "01fcbada-844f-481e-8713-713838a902b9",
+      "name": "Arypepe",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "a3945e2f-53ad-4303-b521-ee162abff2b6",
+      "name": "Pedro H.",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "fff71929-cd45-4f59-aa62-77b555ddd443",
+      "name": "João Bosco",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "49a8c498-2607-4155-9489-1dd21b7dd785",
+      "name": "Jefferson",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "a8f544ee-c17d-41bb-b073-a18a96d75b2a",
+      "name": "Sara",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "95b392d3-60d1-43e2-b374-ffbf3eabc2d4",
+      "name": "Danilo",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "ced9cca2-5e8b-4299-8810-3219f0a90727",
+      "name": "Carlão",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "044e09ee-ddbf-4830-8a0f-f7f3ec281a02",
+      "name": "Roberto",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "64701450-6827-4460-a753-9642e49e6e55",
+      "name": "Sidney",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "bf33a864-a92d-472f-befc-21b876573812",
+      "name": "Cadu",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "eeb89789-0c24-4118-b80b-a91d7941842e",
+      "name": "Henrique R.",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "652b3ec0-5a8e-4fbb-abae-07e1f072b000",
+      "name": "Mariana",
+      "active": true,
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "2f9d374f-1443-4648-8bf6-c8eab1b6ba2c",
+      "name": "teste",
+      "active": true,
+      "created_at": "2025-09-24T19:18:08.020149+00:00",
+      "updated_at": "2025-09-24T19:18:08.020149+00:00"
+    },
+    {
+      "id": "00a670bb-6e0f-41b1-ba0f-85053f4fe802",
+      "name": "Debug 2025-10-02T16:41:47.940Z",
+      "active": true,
+      "created_at": "2025-10-02T16:41:47.999244+00:00",
+      "updated_at": "2025-10-02T16:41:47.999244+00:00"
+    },
+    {
+      "id": "9c8e8f4b-9b06-4d40-a42b-81350f4fd891",
+      "name": "Debug 2025-10-02T16:41:47.948Z",
+      "active": true,
+      "created_at": "2025-10-02T16:41:48.239681+00:00",
+      "updated_at": "2025-10-02T16:41:48.239681+00:00"
+    },
+    {
+      "id": "711e24ab-986f-48a6-839c-1ee3905f0965",
+      "name": "henriquecadu",
+      "active": true,
+      "created_at": "2025-10-02T23:55:47.959668+00:00",
+      "updated_at": "2025-10-02T23:55:47.959668+00:00"
+    },
+    {
+      "id": "436bb72a-c143-4408-bd05-0bb3d6a6c4dc",
+      "name": "HenriqueJoao",
+      "active": true,
+      "created_at": "2025-10-02T23:58:19.073895+00:00",
+      "updated_at": "2025-10-02T23:58:19.073895+00:00"
+    },
+    {
+      "id": "8a6dfb8d-3344-45c2-b6b2-825eb1e2b1a5",
+      "name": "Mari",
+      "active": true,
+      "created_at": "2025-10-03T01:29:31.491999+00:00",
+      "updated_at": "2025-10-03T01:29:31.491999+00:00"
+    },
+    {
+      "id": "8f991ed6-c31b-4a2d-8f33-df7d7b9bd026",
+      "name": "henrique",
+      "active": true,
+      "created_at": "2025-10-03T12:11:02.086615+00:00",
+      "updated_at": "2025-10-03T12:11:02.086615+00:00"
+    },
+    {
+      "id": "dd4ac2d4-cdd7-481a-884b-f8f91db4305a",
+      "name": "Teste custo",
+      "active": true,
+      "created_at": "2025-10-03T15:11:01.599123+00:00",
+      "updated_at": "2025-10-03T15:11:01.599123+00:00"
+    },
+    {
+      "id": "677bcbc3-9427-4a3a-a7fd-84f1482787e5",
+      "name": "Henrique R",
+      "active": true,
+      "created_at": "2025-10-03T15:18:39.588021+00:00",
+      "updated_at": "2025-10-03T15:18:39.588021+00:00"
+    },
+    {
+      "id": "c36335a5-1cac-4b1f-9c8e-ee087e735e0e",
+      "name": "teste 04/10",
+      "active": true,
+      "created_at": "2025-10-04T13:24:57.594412+00:00",
+      "updated_at": "2025-10-04T13:24:57.594412+00:00"
+    },
+    {
+      "id": "a3e9f1df-e7f6-4b3b-b97a-e985a9102334",
+      "name": "teste 04 10",
+      "active": true,
+      "created_at": "2025-10-04T16:07:14.245374+00:00",
+      "updated_at": "2025-10-04T16:07:14.245374+00:00"
+    },
+    {
+      "id": "487a2e7a-321f-478c-8017-ea8348268183",
+      "name": "TESTE 041025",
+      "active": true,
+      "created_at": "2025-10-04T16:19:22.052414+00:00",
+      "updated_at": "2025-10-04T16:19:22.052414+00:00"
+    },
+    {
+      "id": "fddb8753-92b1-4e42-bb6c-34825e1b7dc7",
+      "name": "TESTE DIA 04/10",
+      "active": true,
+      "created_at": "2025-10-04T16:20:32.330958+00:00",
+      "updated_at": "2025-10-04T16:20:32.330958+00:00"
+    }
+  ],
+  "locations": [
+    {
+      "id": "836087ea-5342-4459-9f15-bdf3800b52b9",
+      "name": "VILA SERENA",
+      "address": "Rua Pedro Guedes, N° 63 – Maracanã",
+      "icon": "🏠",
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "2d80a52f-78f8-4d01-abc6-0fcfe4782b60",
+      "name": "CLÍNICA EVOLUÇÃO",
+      "address": "Rua Mariz e Barros, N° 430 – Praça da Bandeira",
+      "icon": "🏥",
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "3c42000b-0cf4-4344-af94-30fd2fd09b9f",
+      "name": "CLÍNICA DA GÁVEA – UNIDADE TIJUCA",
+      "address": "Rua Dr. Pereira dos Santos, N° 18 – Tijuca",
+      "icon": "🏥",
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "name": "HOSPITAL SÃO FRANCISCO NA PROVIDÊNCIA DE DEUS",
+      "address": "Rua Conde de Bonfim, N° 1030 – Tijuca",
+      "icon": "🏥",
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "27f6583b-2fab-4395-b7ec-ffd11e4089c3",
+      "name": "HOSPITAL CASA MENSSANA",
+      "address": "Rua Marechal Jofre, N° 30 – Grajaú",
+      "icon": "🏥",
+      "created_at": "2025-09-24T12:12:24.520261+00:00",
+      "updated_at": "2025-09-24T12:12:24.520261+00:00"
+    },
+    {
+      "id": "b1a8d133-ebe4-4d64-89cf-0b9a1ea93752",
+      "name": "Casa de Recuperacao na Tijuca",
+      "address": "Maria amalia 628",
+      "icon": "🏥",
+      "created_at": "2025-10-02T23:57:02.203421+00:00",
+      "updated_at": "2025-10-02T23:57:02.203421+00:00"
+    },
+    {
+      "id": "fdb49cd2-d90b-4b06-bafc-c616505c7fb5",
+      "name": "Casa de Recuperacao Tijuca",
+      "address": "Maria Amalia 628",
+      "icon": "🏥",
+      "created_at": "2025-10-02T23:57:34.331803+00:00",
+      "updated_at": "2025-10-02T23:57:34.331803+00:00"
+    },
+    {
+      "id": "72119625-789b-42be-8482-e76a3c6a5d3b",
+      "name": "Clinica Repouso sobrio",
+      "address": "Maria Amalia 628",
+      "icon": "🏥",
+      "created_at": "2025-10-03T00:04:52.693243+00:00",
+      "updated_at": "2025-10-03T00:04:52.693243+00:00"
+    }
+  ],
+  "visit_companions": [
+    {
+      "id": "5637403f-9b23-41ce-969f-075ed9ce1a64",
+      "visit_id": "bc559def-d42d-46e9-ba5d-3fba40d10842",
+      "companion_id": "044e09ee-ddbf-4830-8a0f-f7f3ec281a02",
+      "created_at": "2025-10-04T16:33:58.816014+00:00",
+      "cost": 20
+    },
+    {
+      "id": "e8e792fb-83f8-4d25-ab9b-afb4eb830d9e",
+      "visit_id": "bc559def-d42d-46e9-ba5d-3fba40d10842",
+      "companion_id": "8a6dfb8d-3344-45c2-b6b2-825eb1e2b1a5",
+      "created_at": "2025-10-04T16:33:58.816014+00:00",
+      "cost": 30
+    },
+    {
+      "id": "ea0b6c84-eb81-4408-b915-108ad50e9401",
+      "visit_id": "bc559def-d42d-46e9-ba5d-3fba40d10842",
+      "companion_id": "c36335a5-1cac-4b1f-9c8e-ee087e735e0e",
+      "created_at": "2025-10-04T16:33:58.816014+00:00",
+      "cost": 25
+    },
+    {
+      "id": "e40be4f2-b1f8-4dca-8c1e-e5c2c42fae10",
+      "visit_id": "3bae1b5c-aba8-45e2-8180-c25f934b0d24",
+      "companion_id": "fff71929-cd45-4f59-aa62-77b555ddd443",
+      "created_at": "2025-10-03T15:21:18.728221+00:00",
+      "cost": null
+    },
+    {
+      "id": "f2a448ca-d452-4c7b-8107-56e36f220ba4",
+      "visit_id": "3bae1b5c-aba8-45e2-8180-c25f934b0d24",
+      "companion_id": "49a8c498-2607-4155-9489-1dd21b7dd785",
+      "created_at": "2025-10-03T15:21:18.728221+00:00",
+      "cost": null
+    },
+    {
+      "id": "647b3e9d-a08a-412d-9e50-f1390937ff53",
+      "visit_id": "3bae1b5c-aba8-45e2-8180-c25f934b0d24",
+      "companion_id": "a8f544ee-c17d-41bb-b073-a18a96d75b2a",
+      "created_at": "2025-10-03T15:21:18.728221+00:00",
+      "cost": null
+    },
+    {
+      "id": "0507cd76-ce6e-4768-b096-b6a5c826dbce",
+      "visit_id": "3bae1b5c-aba8-45e2-8180-c25f934b0d24",
+      "companion_id": "8f991ed6-c31b-4a2d-8f33-df7d7b9bd026",
+      "created_at": "2025-10-03T15:21:18.728221+00:00",
+      "cost": 15
+    },
+    {
+      "id": "dd93543b-3ac8-4a02-b0b5-62b0596b883e",
+      "visit_id": "f178d7dc-3490-4454-aa03-360ae8fbe063",
+      "companion_id": "fff71929-cd45-4f59-aa62-77b555ddd443",
+      "created_at": "2025-10-03T16:49:45.144975+00:00",
+      "cost": 15
+    },
+    {
+      "id": "79170861-7483-4ea4-b5b4-e9884e293e0f",
+      "visit_id": "f178d7dc-3490-4454-aa03-360ae8fbe063",
+      "companion_id": "044e09ee-ddbf-4830-8a0f-f7f3ec281a02",
+      "created_at": "2025-10-03T16:49:45.144975+00:00",
+      "cost": null
+    },
+    {
+      "id": "2eeccef7-7899-46a2-bd93-c99fdf152109",
+      "visit_id": "f178d7dc-3490-4454-aa03-360ae8fbe063",
+      "companion_id": "64701450-6827-4460-a753-9642e49e6e55",
+      "created_at": "2025-10-03T16:49:45.144975+00:00",
+      "cost": null
+    },
+    {
+      "id": "4e9d71d7-b926-4b3f-bb9b-0e49d6cf8dbd",
+      "visit_id": "878e2805-853c-4191-8913-0b7cfeb42e1a",
+      "companion_id": "bf33a864-a92d-472f-befc-21b876573812",
+      "created_at": "2025-10-04T16:09:54.153383+00:00",
+      "cost": null
+    },
+    {
+      "id": "6cb3e8b6-c8d7-4fb2-a664-1420e4093a37",
+      "visit_id": "878e2805-853c-4191-8913-0b7cfeb42e1a",
+      "companion_id": "eeb89789-0c24-4118-b80b-a91d7941842e",
+      "created_at": "2025-10-04T16:09:54.153383+00:00",
+      "cost": 20
+    },
+    {
+      "id": "3f5e86c0-81fd-4595-8f17-f1cfb32ef609",
+      "visit_id": "554a724a-d0a4-4aa9-9101-4b908d5181ba",
+      "companion_id": "fff71929-cd45-4f59-aa62-77b555ddd443",
+      "created_at": "2025-10-03T21:19:28.636496+00:00",
+      "cost": null
+    },
+    {
+      "id": "f11991d8-36a8-41d6-bc52-9fa2dafed9c1",
+      "visit_id": "554a724a-d0a4-4aa9-9101-4b908d5181ba",
+      "companion_id": "044e09ee-ddbf-4830-8a0f-f7f3ec281a02",
+      "created_at": "2025-10-03T21:19:28.636496+00:00",
+      "cost": null
+    },
+    {
+      "id": "919cac2f-0922-4dfe-8c37-bf593c9602fa",
+      "visit_id": "554a724a-d0a4-4aa9-9101-4b908d5181ba",
+      "companion_id": "8f991ed6-c31b-4a2d-8f33-df7d7b9bd026",
+      "created_at": "2025-10-03T21:19:28.636496+00:00",
+      "cost": 100
+    },
+    {
+      "id": "35310e68-de3e-4428-abc4-0a197c763569",
+      "visit_id": "878e2805-853c-4191-8913-0b7cfeb42e1a",
+      "companion_id": "652b3ec0-5a8e-4fbb-abae-07e1f072b000",
+      "created_at": "2025-10-04T16:09:54.153383+00:00",
+      "cost": 25
+    },
+    {
+      "id": "8e74eb87-9976-47c3-a098-7eb85fa69688",
+      "visit_id": "878e2805-853c-4191-8913-0b7cfeb42e1a",
+      "companion_id": "a3945e2f-53ad-4303-b521-ee162abff2b6",
+      "created_at": "2025-10-04T16:09:54.153383+00:00",
+      "cost": 15
+    },
+    {
+      "id": "3ce76e6b-eec4-48a8-93d0-6e67c2f29a21",
+      "visit_id": "2e32f9e6-36fb-4c08-89a6-5b16faf19ba7",
+      "companion_id": "01fcbada-844f-481e-8713-713838a902b9",
+      "created_at": "2025-10-04T13:24:58.046808+00:00",
+      "cost": 10
+    },
+    {
+      "id": "128a640c-dd43-460e-aef4-1caf9e4c2d3a",
+      "visit_id": "2e32f9e6-36fb-4c08-89a6-5b16faf19ba7",
+      "companion_id": "a3945e2f-53ad-4303-b521-ee162abff2b6",
+      "created_at": "2025-10-04T13:24:58.046808+00:00",
+      "cost": null
+    },
+    {
+      "id": "f1833bcd-ae8e-4b83-9753-8b1aa48593ce",
+      "visit_id": "2e32f9e6-36fb-4c08-89a6-5b16faf19ba7",
+      "companion_id": "fff71929-cd45-4f59-aa62-77b555ddd443",
+      "created_at": "2025-10-04T13:24:58.046808+00:00",
+      "cost": null
+    },
+    {
+      "id": "753b90cc-2590-4dfc-a68a-0ee4670d0f63",
+      "visit_id": "2e32f9e6-36fb-4c08-89a6-5b16faf19ba7",
+      "companion_id": "044e09ee-ddbf-4830-8a0f-f7f3ec281a02",
+      "created_at": "2025-10-04T13:24:58.046808+00:00",
+      "cost": null
+    },
+    {
+      "id": "50ed0733-6df0-4198-8b1b-f5c19e222371",
+      "visit_id": "0722916b-3c54-48c4-9e14-cd65e2a8c5db",
+      "companion_id": "49a8c498-2607-4155-9489-1dd21b7dd785",
+      "created_at": "2025-10-04T16:18:45.34203+00:00",
+      "cost": 10
+    },
+    {
+      "id": "86914dd6-637b-4780-98ae-f43615ea59a3",
+      "visit_id": "c59b1001-5cbb-475b-8c08-b02bf5d8afe2",
+      "companion_id": "eeb89789-0c24-4118-b80b-a91d7941842e",
+      "created_at": "2025-10-04T15:11:52.328824+00:00",
+      "cost": 15
+    },
+    {
+      "id": "305e09ac-afbe-4961-8552-6995b49df7a6",
+      "visit_id": "e5974f7d-514c-4c59-b3f9-9bbf35d8903e",
+      "companion_id": "49a8c498-2607-4155-9489-1dd21b7dd785",
+      "created_at": "2025-10-03T15:18:41.682657+00:00",
+      "cost": null
+    },
+    {
+      "id": "6fb3505f-5797-40b2-82af-8bc45dc80fbf",
+      "visit_id": "e5974f7d-514c-4c59-b3f9-9bbf35d8903e",
+      "companion_id": "a8f544ee-c17d-41bb-b073-a18a96d75b2a",
+      "created_at": "2025-10-03T15:18:41.682657+00:00",
+      "cost": null
+    },
+    {
+      "id": "9a2e526b-d79f-4246-9ca0-7d6167e57d71",
+      "visit_id": "e5974f7d-514c-4c59-b3f9-9bbf35d8903e",
+      "companion_id": "95b392d3-60d1-43e2-b374-ffbf3eabc2d4",
+      "created_at": "2025-10-03T15:18:41.682657+00:00",
+      "cost": null
+    },
+    {
+      "id": "eda3ecb2-0e51-461b-8f92-b7f1f401bc0c",
+      "visit_id": "e5974f7d-514c-4c59-b3f9-9bbf35d8903e",
+      "companion_id": "ced9cca2-5e8b-4299-8810-3219f0a90727",
+      "created_at": "2025-10-03T15:18:41.682657+00:00",
+      "cost": null
+    },
+    {
+      "id": "53b16f34-a880-41aa-91f6-8842e63026b7",
+      "visit_id": "e5974f7d-514c-4c59-b3f9-9bbf35d8903e",
+      "companion_id": "677bcbc3-9427-4a3a-a7fd-84f1482787e5",
+      "created_at": "2025-10-03T15:18:41.682657+00:00",
+      "cost": 15
+    },
+    {
+      "id": "edc2a3d9-e6f1-4f61-a994-da339de1ae41",
+      "visit_id": "0722916b-3c54-48c4-9e14-cd65e2a8c5db",
+      "companion_id": "a8f544ee-c17d-41bb-b073-a18a96d75b2a",
+      "created_at": "2025-10-04T16:18:45.34203+00:00",
+      "cost": 50
+    },
+    {
+      "id": "8ffa836d-a6be-40d1-92c8-076317395863",
+      "visit_id": "0722916b-3c54-48c4-9e14-cd65e2a8c5db",
+      "companion_id": "eeb89789-0c24-4118-b80b-a91d7941842e",
+      "created_at": "2025-10-04T16:18:45.34203+00:00",
+      "cost": 0
+    },
+    {
+      "id": "722a31ac-ee4e-4021-b6b0-4b9a4b399322",
+      "visit_id": "0722916b-3c54-48c4-9e14-cd65e2a8c5db",
+      "companion_id": "c36335a5-1cac-4b1f-9c8e-ee087e735e0e",
+      "created_at": "2025-10-04T16:18:45.34203+00:00",
+      "cost": 50
+    },
+    {
+      "id": "a161c54e-bd0e-44f2-abdb-0b9d463bd87f",
+      "visit_id": "ecaec835-01be-4d20-a1e5-a25bd6883f50",
+      "companion_id": "436bb72a-c143-4408-bd05-0bb3d6a6c4dc",
+      "created_at": "2025-10-04T16:19:22.342721+00:00",
+      "cost": 0
+    },
+    {
+      "id": "cf47250d-f417-48d1-b650-1572b4123a93",
+      "visit_id": "c59b1001-5cbb-475b-8c08-b02bf5d8afe2",
+      "companion_id": "bf33a864-a92d-472f-befc-21b876573812",
+      "created_at": "2025-10-04T15:11:52.328824+00:00",
+      "cost": 150
+    },
+    {
+      "id": "dbba8b6d-5f9f-4810-959c-0e1cb6eb4d54",
+      "visit_id": "c59b1001-5cbb-475b-8c08-b02bf5d8afe2",
+      "companion_id": "95b392d3-60d1-43e2-b374-ffbf3eabc2d4",
+      "created_at": "2025-10-04T15:11:52.328824+00:00",
+      "cost": 100
+    },
+    {
+      "id": "22b924a0-7306-497e-97d5-e6b9cf7b511e",
+      "visit_id": "c59b1001-5cbb-475b-8c08-b02bf5d8afe2",
+      "companion_id": "2f9d374f-1443-4648-8bf6-c8eab1b6ba2c",
+      "created_at": "2025-10-04T15:11:52.328824+00:00",
+      "cost": null
+    },
+    {
+      "id": "a4aad6d0-4ec3-4d7e-b95a-23c027d9f8d2",
+      "visit_id": "ecaec835-01be-4d20-a1e5-a25bd6883f50",
+      "companion_id": "044e09ee-ddbf-4830-8a0f-f7f3ec281a02",
+      "created_at": "2025-10-04T16:19:22.342721+00:00",
+      "cost": 0
+    },
+    {
+      "id": "d50f036c-44ff-4dc7-ae4a-9d38cbaf6066",
+      "visit_id": "772ccccf-0093-4676-ac92-c89154734455",
+      "companion_id": "fddb8753-92b1-4e42-bb6c-34825e1b7dc7",
+      "created_at": "2025-10-04T16:20:32.608922+00:00",
+      "cost": 50
+    },
+    {
+      "id": "7acc1f58-9d46-4a4b-ab1a-bef4c6b67176",
+      "visit_id": "56eaa2b3-98e2-4465-a455-11cb047d622f",
+      "companion_id": "044e09ee-ddbf-4830-8a0f-f7f3ec281a02",
+      "created_at": "2025-10-04T16:25:56.650326+00:00",
+      "cost": null
+    },
+    {
+      "id": "df2a1e33-c936-4e5d-8e60-e9beca0cd989",
+      "visit_id": "56eaa2b3-98e2-4465-a455-11cb047d622f",
+      "companion_id": "652b3ec0-5a8e-4fbb-abae-07e1f072b000",
+      "created_at": "2025-10-04T16:25:56.650326+00:00",
+      "cost": null
+    },
+    {
+      "id": "f61508bb-0d4b-4495-8401-e34406f92685",
+      "visit_id": "56eaa2b3-98e2-4465-a455-11cb047d622f",
+      "companion_id": "eeb89789-0c24-4118-b80b-a91d7941842e",
+      "created_at": "2025-10-04T16:25:56.650326+00:00",
+      "cost": 1
+    },
+    {
+      "id": "78c21e84-9f5d-443d-9d50-f9bde7430381",
+      "visit_id": "56eaa2b3-98e2-4465-a455-11cb047d622f",
+      "companion_id": "95b392d3-60d1-43e2-b374-ffbf3eabc2d4",
+      "created_at": "2025-10-04T16:25:56.650326+00:00",
+      "cost": 0.2
+    },
+    {
+      "id": "e0c42d65-9524-45a2-a6f1-e66e77cfa79e",
+      "visit_id": "56eaa2b3-98e2-4465-a455-11cb047d622f",
+      "companion_id": "dd4ac2d4-cdd7-481a-884b-f8f91db4305a",
+      "created_at": "2025-10-04T16:25:56.650326+00:00",
+      "cost": 0.15
+    },
+    {
+      "id": "3dc9b449-25ef-41cc-b011-3ef58507a634",
+      "visit_id": "56eaa2b3-98e2-4465-a455-11cb047d622f",
+      "companion_id": "c36335a5-1cac-4b1f-9c8e-ee087e735e0e",
+      "created_at": "2025-10-04T16:25:56.650326+00:00",
+      "cost": 25
+    }
+  ],
+  "visits": [
+    {
+      "id": "49ec8ca6-291e-4134-b348-c9459be9e11c",
+      "date": "2025-10-02T17:40:34",
+      "time": "19:40:39",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-10-02T20:40:59.290842+00:00",
+      "updated_at": "2025-10-02T20:40:59.290842+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": "TESTE DE HENRIQUE",
+      "notes": null,
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "d6092c77-eded-4721-92dc-ce4f78207e68",
+      "date": "2025-10-05T00:00:00",
+      "time": "15:30:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-10-02T20:41:24.220351+00:00",
+      "updated_at": "2025-10-02T20:41:24.220351+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "Teste de inserção",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "ff402aaa-843c-40f9-9531-a2a428918769",
+      "date": "2025-10-05T00:00:00",
+      "time": "15:30:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-10-02T20:49:31.03767+00:00",
+      "updated_at": "2025-10-02T20:49:31.03767+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "Teste de inserção",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "405ff87c-2886-4578-baa3-b7d3ad5d7133",
+      "date": "2025-10-05T00:00:00",
+      "time": "15:30:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-10-02T20:49:31.037689+00:00",
+      "updated_at": "2025-10-03T21:18:27.354411+00:00",
+      "start_time": null,
+      "end_time": "16:23:00",
+      "companions": null,
+      "notes": "Teste de inserção",
+      "obs_finalizacao": null,
+      "isfinalized": true
+    },
+    {
+      "id": "554a724a-d0a4-4aa9-9101-4b908d5181ba",
+      "date": "2024-09-22T00:00:00",
+      "time": "16:00:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-09-24T12:13:08.599208+00:00",
+      "updated_at": "2025-10-03T21:19:28.729006+00:00",
+      "start_time": null,
+      "end_time": "18:19:00",
+      "companions": null,
+      "notes": "Entrega folhetos ",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "878e2805-853c-4191-8913-0b7cfeb42e1a",
+      "date": "2025-09-17T00:00:00",
+      "time": "19:30:00",
+      "location_id": "27f6583b-2fab-4395-b7ec-ffd11e4089c3",
+      "created_at": "2025-09-24T12:13:08.599208+00:00",
+      "updated_at": "2025-10-04T16:09:54.221249+00:00",
+      "start_time": null,
+      "end_time": "21:30:00",
+      "companions": null,
+      "notes": "",
+      "obs_finalizacao": null,
+      "isfinalized": true
+    },
+    {
+      "id": "a0bb7f91-6741-44f6-923d-db4d5f89bf1d",
+      "date": "2025-10-05T00:00:00",
+      "time": "15:30:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-10-02T20:35:15.9296+00:00",
+      "updated_at": "2025-10-04T13:06:45.035623+00:00",
+      "start_time": null,
+      "end_time": "17:00:00",
+      "companions": null,
+      "notes": "Levar folhetos. ",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "2dab823e-24bc-4431-91f8-fa0197d01edf",
+      "date": "2025-10-05T00:00:00",
+      "time": "15:30:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-10-02T20:50:10.237098+00:00",
+      "updated_at": "2025-10-03T01:53:37.566087+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "levar folhetos 12 perguntas",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "827c3ad5-086d-4c48-aa32-c527325b12e2",
+      "date": "2025-10-05T00:00:00",
+      "time": "15:30:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-10-02T20:41:24.205104+00:00",
+      "updated_at": "2025-10-04T13:16:21.66582+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "teste 04/10",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "0722916b-3c54-48c4-9e14-cd65e2a8c5db",
+      "date": "2024-09-15T00:00:00",
+      "time": "17:00:00",
+      "location_id": "2d80a52f-78f8-4d01-abc6-0fcfe4782b60",
+      "created_at": "2025-09-24T12:13:08.599208+00:00",
+      "updated_at": "2025-10-04T16:18:45.402449+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "teste 04/10",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "e5974f7d-514c-4c59-b3f9-9bbf35d8903e",
+      "date": "2025-09-01T00:00:00",
+      "time": "15:30:00",
+      "location_id": "3c42000b-0cf4-4344-af94-30fd2fd09b9f",
+      "created_at": "2025-09-24T12:13:08.599208+00:00",
+      "updated_at": "2025-10-03T15:18:41.555619+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "ecaec835-01be-4d20-a1e5-a25bd6883f50",
+      "date": "2025-10-16T00:00:00",
+      "time": "19:30:00",
+      "location_id": "2d80a52f-78f8-4d01-abc6-0fcfe4782b60",
+      "created_at": "2025-10-02T23:58:19.132514+00:00",
+      "updated_at": "2025-10-04T16:19:22.415433+00:00",
+      "start_time": null,
+      "end_time": "20:30:00",
+      "companions": null,
+      "notes": "Levar folhetos. ",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "2e32f9e6-36fb-4c08-89a6-5b16faf19ba7",
+      "date": "2025-09-24T00:00:00",
+      "time": "16:30:00",
+      "location_id": "836087ea-5342-4459-9f15-bdf3800b52b9",
+      "created_at": "2025-09-24T12:13:08.599208+00:00",
+      "updated_at": "2025-10-04T13:24:58.163388+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "LEVAR LIVRO AZUL",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "3bae1b5c-aba8-45e2-8180-c25f934b0d24",
+      "date": "2024-09-16T00:00:00",
+      "time": "15:30:00",
+      "location_id": "836087ea-5342-4459-9f15-bdf3800b52b9",
+      "created_at": "2025-09-24T12:13:08.599208+00:00",
+      "updated_at": "2025-10-03T15:21:18.583187+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "Levar 12 passos ",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "772ccccf-0093-4676-ac92-c89154734455",
+      "date": "2025-10-05T00:00:00",
+      "time": "15:30:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-10-02T20:50:10.237112+00:00",
+      "updated_at": "2025-10-04T16:20:32.684193+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "Teste de inserção",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "56eaa2b3-98e2-4465-a455-11cb047d622f",
+      "date": "2025-10-30T00:00:00",
+      "time": "19:00:00",
+      "location_id": "72119625-789b-42be-8482-e76a3c6a5d3b",
+      "created_at": "2025-10-03T00:05:32.501672+00:00",
+      "updated_at": "2025-10-04T16:25:56.717553+00:00",
+      "start_time": null,
+      "end_time": "20:30:00",
+      "companions": null,
+      "notes": "Levar 12 follhetos E LIVRO AZUL e 12 Passos",
+      "obs_finalizacao": null,
+      "isfinalized": true
+    },
+    {
+      "id": "62a123af-2369-4614-b7fd-5c8cae4dd53f",
+      "date": "2025-10-05T00:00:00",
+      "time": "15:30:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-10-02T20:35:15.929602+00:00",
+      "updated_at": "2025-10-03T16:06:08.533273+00:00",
+      "start_time": null,
+      "end_time": "17:30:00",
+      "companions": null,
+      "notes": "12 presenças. Iniciado e encerrado com oraçao",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "bc559def-d42d-46e9-ba5d-3fba40d10842",
+      "date": "2025-10-15T00:00:00",
+      "time": "19:30:00",
+      "location_id": "27f6583b-2fab-4395-b7ec-ffd11e4089c3",
+      "created_at": "2025-10-02T23:55:48.08409+00:00",
+      "updated_at": "2025-10-04T16:33:58.930242+00:00",
+      "start_time": null,
+      "end_time": "20:30:00",
+      "companions": null,
+      "notes": "LEVAR 12 FOLHETOS PARA INTERNOS presentes",
+      "obs_finalizacao": null,
+      "isfinalized": true
+    },
+    {
+      "id": "f178d7dc-3490-4454-aa03-360ae8fbe063",
+      "date": "2024-09-24T00:00:00",
+      "time": "16:00:00",
+      "location_id": "26be8e56-a997-4997-aa0f-aa0f550cc2d5",
+      "created_at": "2025-09-24T12:13:08.599208+00:00",
+      "updated_at": "2025-10-03T16:49:45.243165+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    },
+    {
+      "id": "c59b1001-5cbb-475b-8c08-b02bf5d8afe2",
+      "date": "2025-10-31T00:00:00",
+      "time": "19:30:00",
+      "location_id": "27f6583b-2fab-4395-b7ec-ffd11e4089c3",
+      "created_at": "2025-10-03T00:04:29.756846+00:00",
+      "updated_at": "2025-10-04T15:11:52.394742+00:00",
+      "start_time": null,
+      "end_time": null,
+      "companions": null,
+      "notes": "teste 04/10",
+      "obs_finalizacao": null,
+      "isfinalized": false
+    }
+  ]
+}

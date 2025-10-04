@@ -3,6 +3,23 @@ import { useState, useMemo, useEffect } from "react";
 import useVisits from "@/hooks/useVisits";
 import { supabase } from "@/lib/supabaseClient";
 
+// === Formata data no formato brasileiro (corrige -1 dia UTC) ===
+function formatDateBRFull(dateStr?: string): string {
+    if (!dateStr) return "";
+    // cria uma data “sem deslocar” o fuso
+    const [year, month, day] = dateStr.split("T")[0].split("-").map(Number);
+    const d = new Date(year, month - 1, day); // local sem UTC offset
+    const str = d.toLocaleDateString("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  
+  
+
 export default function Dashboard() {
   const { visits, updateVisit, saveVisitChanges } = useVisits();
 
@@ -966,7 +983,7 @@ function parseCurrencyBR(input: string): number | undefined {
                       <h2 className="font-bold text-lg">{visit.location?.name}</h2>
                       <p className="text-gray-700 text-base">{visit.location?.address}</p>
                       <p className="text-gray-700 text-base mb-2">
-                        📅 {visit.date} às {visit.time}
+                      📅 {formatDateBRFull(visit.date)} às {visit.time}
                         {(visit as any).endTime ? ` → ${(visit as any).endTime}` : ""}
                         {(visit as any).isFinalized || (visit as any).endTime ? (
                           <span className="ml-2 inline-flex items-center rounded bg-green-100 text-green-800 px-2 py-0.5 text-xs font-medium">
