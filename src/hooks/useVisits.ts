@@ -62,6 +62,7 @@ function normalizeVisit(v: any, idx: number): Visit {
 
 export default function useVisits() {
   const [visits, setVisits] = useState<Visit[]>([]);
+  const [companions, setCompanions] = useState<any[]>([]);
   const [locations, setLocations] = useState<{ id: string; name: string }[]>(
     []
   );
@@ -270,6 +271,7 @@ export default function useVisits() {
   useEffect(() => {
     async function fetchVisits() {
       try {
+        // ======= Busca das visitas =======
         const { data, error } = await supabase
           .from("visits")
           .select(`
@@ -286,37 +288,52 @@ export default function useVisits() {
               companions(id, name)
             )
           `);
-
+  
         if (error) {
           console.warn("[visits] Erro ao buscar dados do Supabase:", error.message);
           throw error;
         }
-
+  
+        // Normaliza as visitas e locais
         const normalized: Visit[] = (Array.isArray(data) ? data : []).map(
           (v, i) => normalizeVisit(v, i)
         );
         setVisits(normalized);
-
+  
         const uniqueLocs = [
           ...new Map(normalized.map((v) => [v.location?.id, v.location])).values(),
         ]
           .filter(Boolean)
           .map((l: any) => ({ id: l.id ?? "", name: l.name ?? "Local" }));
-
+  
         setLocations(uniqueLocs);
+  
+        // ======= Busca adicional: lista global de companheiros =======
+        const { data: companionsData, error: companionsError } = await supabase
+          .from("companions")
+          .select("id, name")
+          .order("name", { ascending: true });
+  
+        if (companionsError) {
+          console.warn("[companions] Erro ao buscar lista de companheiros:", companionsError.message);
+        } else {
+          setCompanions(companionsData || []);
+        }
+  
       } catch (err) {
-        console.warn("[visits] Falha ao buscar visitas. Nenhum dado carregado.");
+        console.warn("[visits] Falha ao buscar visitas. Nenhum dado carregado.", err);
       } finally {
         setIsLoading(false);
       }
     }
-
+  
     fetchVisits();
   }, []);
-
+  
   return {
     visits,
     locations,
+    companions,
     isLoading,
     finalizeVisit,
     updateVisit,

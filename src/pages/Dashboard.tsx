@@ -18,11 +18,9 @@ function formatDateBRFull(dateStr?: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
   
+  export default function Dashboard() {
+    const { visits, companions = [], updateVisit, saveVisitChanges } = useVisits();
   
-
-export default function Dashboard() {
-  const { visits, updateVisit, saveVisitChanges } = useVisits();
-
   // ====== filtros ======
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedLocal, setSelectedLocal] = useState<string>("all");
@@ -900,25 +898,34 @@ function parseCurrencyBR(input: string): number | undefined {
                         title="Hora de finalização"
                       />
 
-                      {/* Adicionar companheiro */}
-                      <input
-                        type="text"
-                        placeholder="Adicionar companheiro e pressionar Enter"
-                        className="border p-2 rounded w-full mb-2 text-gray-800"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                            e.preventDefault();
-                            const name = e.currentTarget.value.trim();
-                            if (!formData.companions?.some((x: any) => x.name === name)) {
-                              setFormData({
-                                ...formData,
-                                companions: [...(formData.companions || []), { name, cost: "" }],
-                              });
-                            }
-                            e.currentTarget.value = "";
-                          }
-                        }}
-                      />
+                     {/* Adicionar companheiro (com autocomplete) */}
+ {/* Adicionar companheiro com sugestões automáticas */}
+<input
+  type="text"
+  list="companions-list"
+  placeholder="Adicionar companheiro e pressionar Enter"
+  className="border p-2 rounded w-full mb-2 text-gray-800"
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && e.currentTarget.value.trim()) {
+      e.preventDefault();
+      const name = e.currentTarget.value.trim();
+      if (!formData.companions?.some((x: any) => x.name === name)) {
+        setFormData({
+          ...formData,
+          companions: [...(formData.companions || []), { name, cost: "" }],
+        });
+      }
+      e.currentTarget.value = "";
+    }
+  }}
+/>
+
+{/* Lista de nomes já existentes */}
+<datalist id="companions-list">
+  {(companions || []).map((c: any) => (
+    <option key={c.id} value={c.name} />
+  ))}
+</datalist>
 
                       {/* Lista: nome + Ajuda de Custo ao lado */}
                       <div className="space-y-2 mb-2">
