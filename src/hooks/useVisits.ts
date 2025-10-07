@@ -63,9 +63,7 @@ function normalizeVisit(v: any, idx: number): Visit {
 export default function useVisits() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [companions, setCompanions] = useState<any[]>([]);
-  const [locations, setLocations] = useState<{ id: string; name: string }[]>(
-    []
-  );
+  const [locations, setLocations] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const finalizeVisit = (
@@ -133,9 +131,7 @@ export default function useVisits() {
     });
   };
 
-  async function ensureCompanionsExist(
-    names: string[]
-  ): Promise<string[]> {
+  async function ensureCompanionsExist(names: string[]): Promise<string[]> {
     if (names.length === 0) return [];
     const { data: existing, error } = await supabase
       .from("companions")
@@ -162,26 +158,34 @@ export default function useVisits() {
         .select("id, name");
 
       if (insertError) {
-        console.warn("[companions] Erro ao inserir novos companheiros:", insertError.message);
+        console.warn(
+          "[companions] Erro ao inserir novos companheiros:",
+          insertError.message
+        );
       }
 
       newIds = (inserted ?? []).map((c) => c.id);
     }
 
-    // Retorna na mesma ordem de 'names'
+    // Retorna na mesma ordem
     return names.map((name, idx) => {
       const key = name.trim().toLowerCase();
       return existingMap.get(key) ?? newIds[idx] ?? "";
     });
   }
 
-  // 🔧 ALTERADO: agora aceita { name, cost? }
+  // ✅ corrigido — agora aceita tanto string[] quanto {name,cost?}[]
   const saveVisitChanges = async (
     id: string,
     observation: string,
-    companionEntries: { name: string; cost?: number }[]
+    companionEntries: any[] // ← aceita os dois tipos
   ) => {
-    const names = (companionEntries ?? []).map((e) => e.name.trim());
+    // converte tudo para array de nomes limpos
+    const names = (companionEntries ?? [])
+      .map((e) => (typeof e === "string" ? e : e?.name ?? ""))
+      .map((n: string) => n.trim())
+      .filter(Boolean);
+
     const companionIds = await ensureCompanionsExist(names);
 
     // Atualiza observação
@@ -191,14 +195,17 @@ export default function useVisits() {
       .eq("id", id);
 
     if (updateError) {
-      console.warn("[saveVisitChanges] Erro ao atualizar visita:", updateError.message);
+      console.warn(
+        "[saveVisitChanges] Erro ao atualizar visita:",
+        updateError.message
+      );
       return;
     }
 
     // Limpa associações antigas
     await supabase.from("visit_companions").delete().eq("visit_id", id);
 
-    // Reinsere com custo (se houver)
+    // Reinsere companheiros (com custo, se houver)
     const payload = companionIds
       .map((companion_id, i) => ({
         visit_id: id,
@@ -216,9 +223,29 @@ export default function useVisits() {
         .insert(payload);
 
       if (insertError) {
-        console.warn("[saveVisitChanges] Erro ao inserir companheiros:", insertError.message);
+        console.warn(
+          "[saveVisitChanges] Erro ao inserir companheiros:",
+          insertError.message
+        );
       }
     }
+
+    // Atualiza estado local imediatamente
+    setVisits((prev) =>
+      prev.map((v) =>
+        v.id === id
+          ? {
+              ...v,
+              observation,
+              companions: names.map((name, i) => ({
+                id: companionIds[i],
+                name,
+                cost: companionEntries[i]?.cost ?? null,
+              })),
+            }
+          : v
+      )
+    );
   };
 
   const createNewVisit = async (
@@ -251,7 +278,10 @@ export default function useVisits() {
         .from("visit_companions")
         .insert(payload);
       if (insertError) {
-        console.warn("[createNewVisit] Erro ao inserir companheiros:", insertError.message);
+        console.warn(
+          "[createNewVisit] Erro ao inserir companheiros:",
+          insertError.message
+        );
       }
     }
 
@@ -271,7 +301,6 @@ export default function useVisits() {
   useEffect(() => {
     async function fetchVisits() {
       try {
-        // ======= Busca das visitas =======
         const { data, error } = await supabase
           .from("visits")
           .select(`
@@ -288,48 +317,54 @@ export default function useVisits() {
               companions(id, name)
             )
           `);
-  
+
         if (error) {
-          console.warn("[visits] Erro ao buscar dados do Supabase:", error.message);
+          console.warn(
+            "[visits] Erro ao buscar dados do Supabase:",
+            error.message
+          );
           throw error;
         }
-  
-        // Normaliza as visitas e locais
+
         const normalized: Visit[] = (Array.isArray(data) ? data : []).map(
           (v, i) => normalizeVisit(v, i)
         );
         setVisits(normalized);
-  
+
         const uniqueLocs = [
           ...new Map(normalized.map((v) => [v.location?.id, v.location])).values(),
         ]
           .filter(Boolean)
           .map((l: any) => ({ id: l.id ?? "", name: l.name ?? "Local" }));
-  
+
         setLocations(uniqueLocs);
-  
-        // ======= Busca adicional: lista global de companheiros =======
+
         const { data: companionsData, error: companionsError } = await supabase
           .from("companions")
           .select("id, name")
           .order("name", { ascending: true });
-  
+
         if (companionsError) {
-          console.warn("[companions] Erro ao buscar lista de companheiros:", companionsError.message);
+          console.warn(
+            "[companions] Erro ao buscar lista de companheiros:",
+            companionsError.message
+          );
         } else {
           setCompanions(companionsData || []);
         }
-  
       } catch (err) {
-        console.warn("[visits] Falha ao buscar visitas. Nenhum dado carregado.", err);
+        console.warn(
+          "[visits] Falha ao buscar visitas. Nenhum dado carregado.",
+          err
+        );
       } finally {
         setIsLoading(false);
       }
     }
-  
+
     fetchVisits();
   }, []);
-  
+
   return {
     visits,
     locations,
@@ -338,7 +373,7 @@ export default function useVisits() {
     finalizeVisit,
     updateVisit,
     addVisit,
-    saveVisitChanges, // <- agora aceita {name, cost}
+    saveVisitChanges,
     createNewVisit,
   };
 }
