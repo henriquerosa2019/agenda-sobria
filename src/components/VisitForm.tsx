@@ -99,7 +99,7 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
         {/* Campo para adicionar novo nome */}
         <input
           type="text"
-          placeholder="Digite um nome e pressione Enter"
+          placeholder="Digite ou selecione um nome e pressione Enter ou toque fora"
           className="w-full border rounded px-2 py-1 mb-2"
           onKeyDown={(e) => {
             if (e.key === "Enter" && e.currentTarget.value.trim() !== "") {
@@ -110,6 +110,19 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
                 return [...prev, { name: newName, cost: 0 }];
               });
               e.currentTarget.value = "";
+            }
+          }}
+          onBlur={(e) => {
+            // Captura o nome quando o campo perde o foco (mobile)
+            const newName = e.currentTarget.value.trim();
+            if (newName !== "") {
+              setTimeout(() => {
+                setCompanions((prev) => {
+                  if (prev.some((c) => c.name === newName)) return prev;
+                  return [...prev, { name: newName, cost: 0 }];
+                });
+                e.currentTarget.value = "";
+              }, 150); // pequeno delay garante captura no mobile
             }
           }}
         />
