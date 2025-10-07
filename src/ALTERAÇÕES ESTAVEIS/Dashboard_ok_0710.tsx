@@ -440,18 +440,35 @@ function parseCurrencyBR(input: string): number | undefined {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* ===== Header (novo) ===== */}
-      <header className="bg-blue-700 text-white sticky top-0 z-40 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-3">
-          <h3 className="text-white font-semibold tracking-wide text-lg md:text-xl">
-            GESTAO DE VISITAS - CTO DS 17 - AREA RJ
-          </h3>
-        </div>
-      </header>
+ {/* ===== HEADER PERSONALIZADO ===== */}
+<header
+  className="bg-[#123A73] text-white shadow-md flex items-center justify-between px-6 py-3"
+  style={{ fontFamily: "'Playfair Display', serif" }}
+>
+  {/* Logo à esquerda */}
+  <div className="flex items-center space-x-3">
+    <img
+      src="/assets/aa-logo.png"
+      alt="Logo AA CTO DS17"
+      className="h-[150px] md:h-[180px] w-auto object-contain rounded-full bg-white/95 p-3 shadow-md border border-white/60"
+
+
+    />
+  </div>
+
+  {/* Texto centralizado */}
+  <h3 className="flex-1 text-center text-xl md:text-2xl font-semibold text-[#E3E3E3] tracking-wide">
+    📅 PLANEJAMENTO DE VISITAS - CTO DS17 - ÁREA RJ
+  </h3>
+
+  {/* Espaço invisível para manter centralização */}
+  <div className="w-10" />
+</header>
 
       {/* ===== Main ===== */}
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold mb-4">📌 Gestão de Visitas</h1>
+          <h1 className="text-2xl font-bold mb-4">📌 Gestão de Visitas - use os filtros para buscas</h1>
 
           {/* ====== Barra de filtros (Local → Mês → Busca) ====== */}
           <div className="mb-2 grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -1041,7 +1058,7 @@ function parseCurrencyBR(input: string): number | undefined {
       </main>
 
       {/* ===== Footer (novo) ===== */}
-      <footer className="bg-blue-700 text-white">
+      <footer className="[#123A73] text-white">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h2 className="text-white font-semibold text-lg md:text-xl leading-snug">
             Nosso Propósito primordial é mantermo-nos sóbrios e ajudar outros a alcançarem a sobriedade

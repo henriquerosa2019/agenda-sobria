@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, PlusCircle } from 'lucide-react';
 import { Visit } from '@/types/visit';
 import useVisits from '@/hooks/useVisits';
 import { useToast } from '@/components/ui/use-toast';
@@ -17,15 +17,28 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
   const { toast } = useToast();
 
   const [observation, setObservation] = useState(visit.observation ?? '');
-  const [companionNames, setCompanionNames] = useState<string[]>(
-    visit.companions?.map((c) => c.name) ?? []
+  const [companions, setCompanions] = useState<{ name: string; cost?: number }[]>(
+    visit.companions?.map((c) => ({ name: c.name, cost: c.cost ?? 0 })) ?? []
   );
+  const [newCompanion, setNewCompanion] = useState('');
 
-  // Atualiza campos se a visita mudar
   useEffect(() => {
     setObservation(visit.observation ?? '');
-    setCompanionNames(visit.companions?.map((c) => c.name) ?? []);
+    setCompanions(
+      visit.companions?.map((c) => ({ name: c.name, cost: c.cost ?? 0 })) ?? []
+    );
   }, [visit]);
+
+  const handleAddCompanion = () => {
+    const trimmed = newCompanion.trim();
+    if (!trimmed) return;
+    setCompanions((prev) => {
+      if (prev.some((c) => c.name.toLowerCase() === trimmed.toLowerCase()))
+        return prev; // evita duplicar
+      return [...prev, { name: trimmed, cost: 0 }];
+    });
+    setNewCompanion('');
+  };
 
   const handleSave = async () => {
     if (!visit.id) {
@@ -34,13 +47,12 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
     }
 
     try {
-      // 🔹 Garante que o último valor selecionado/digitado seja aplicado (mobile-safe)
-      await new Promise((res) => setTimeout(res, 200));
-
-      const finalCompanions = [...companionNames].map((n) => n.trim()).filter(Boolean);
-
-      await saveVisitChanges(visit.id, observation.trim(), finalCompanions);
-
+      await new Promise((res) => setTimeout(res, 150));
+      await saveVisitChanges(
+        visit.id,
+        observation,
+        companions.map((c) => ({ name: c.name, cost: c.cost ?? 0 }))
+      );
       toast({ title: '✅ Visita atualizada com sucesso!' });
     } catch (error) {
       toast({
@@ -72,40 +84,69 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
         </div>
 
         {/* Companheiros */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <label className="text-sm font-medium">Companheiros</label>
-          <Input
-            inputMode="text"
-            placeholder="Digite os nomes separados por vírgula"
-            value={companionNames.join(', ')}
-            onChange={(e) => {
-              const value = e.target.value;
-              setCompanionNames(
-                value
-                  .split(',')
-                  .map((name) => name.trim())
-                  .filter(Boolean)
-              );
 
-              // 🔹 Reforça atualização imediata no mobile (Android/iOS)
-              setTimeout(() => {
-                setCompanionNames(
-                  value
-                    .split(',')
-                    .map((name) => name.trim())
-                    .filter(Boolean)
-                );
-              }, 80);
-            }}
-          />
+          {/* Campo + Botão OK */}
+          <div className="flex gap-2">
+            <Input
+              placeholder="Digite o nome do companheiro"
+              value={newCompanion}
+              onChange={(e) => setNewCompanion(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddCompanion();
+                }
+              }}
+            />
+            <Button onClick={handleAddCompanion} variant="secondary">
+              <PlusCircle size={16} className="mr-1" />
+              OK
+            </Button>
+          </div>
 
-          <div className="flex flex-wrap gap-2 mt-2">
-            {companionNames.map((name, i) => (
-              <Badge key={i} variant="secondary">
-                <Users size={12} className="mr-1" />
-                {name}
-              </Badge>
-            ))}
+          {/* Lista dinâmica */}
+          <div className="space-y-2">
+            {companions.length > 0 ? (
+              companions.map((c, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold min-w-[80px] text-center">
+                    {c.name}
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={c.cost ?? 0}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
+                      setCompanions((prev) =>
+                        prev.map((item, idx) =>
+                          idx === i ? { ...item, cost: val } : item
+                        )
+                      );
+                    }}
+                    className="border rounded px-2 py-1 w-20 text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCompanions((prev) =>
+                        prev.filter((_, idx) => idx !== i)
+                      )
+                    }
+                    className="text-red-500 text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-gray-500 italic">
+                Nenhum companheiro adicionado
+              </p>
+            )}
           </div>
         </div>
 
@@ -113,16 +154,9 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
         <div className="space-y-2">
           <label className="text-sm font-medium">Observações</label>
           <Input
-            inputMode="text"
             placeholder="Digite uma observação"
             value={observation}
             onChange={(e) => setObservation(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSave();
-              }
-            }}
           />
         </div>
 

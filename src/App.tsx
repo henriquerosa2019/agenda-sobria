@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./ALTERAÇÕES ESTAVEIS/Dashboard_ok_0710";
 import SmokeTest from "./debug/SmokeTest";
 // 🔹 importar a nova página
 import Configurar from "./pages/Configurar";
