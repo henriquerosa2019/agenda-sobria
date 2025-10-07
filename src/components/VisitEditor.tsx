@@ -21,7 +21,7 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
     visit.companions?.map((c) => c.name) ?? []
   );
 
-  // Atualiza os campos se a visita mudar
+  // Atualiza campos se a visita mudar
   useEffect(() => {
     setObservation(visit.observation ?? '');
     setCompanionNames(visit.companions?.map((c) => c.name) ?? []);
@@ -34,10 +34,13 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
     }
 
     try {
-      // Aguarda breve delay para capturar último caractere digitado no mobile
-      await new Promise((res) => setTimeout(res, 150));
+      // 🔹 Garante que o último valor selecionado/digitado seja aplicado (mobile-safe)
+      await new Promise((res) => setTimeout(res, 200));
 
-      await saveVisitChanges(visit.id, observation, companionNames);
+      const finalCompanions = [...companionNames].map((n) => n.trim()).filter(Boolean);
+
+      await saveVisitChanges(visit.id, observation.trim(), finalCompanions);
+
       toast({ title: '✅ Visita atualizada com sucesso!' });
     } catch (error) {
       toast({
@@ -75,22 +78,27 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
             inputMode="text"
             placeholder="Digite os nomes separados por vírgula"
             value={companionNames.join(', ')}
-            onChange={(e) =>
+            onChange={(e) => {
+              const value = e.target.value;
               setCompanionNames(
-                e.target.value
+                value
                   .split(',')
                   .map((name) => name.trim())
                   .filter(Boolean)
-              )
-            }
-            onKeyDown={(e) => {
-              // Permite salvar com Enter no celular
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSave();
-              }
+              );
+
+              // 🔹 Reforça atualização imediata no mobile (Android/iOS)
+              setTimeout(() => {
+                setCompanionNames(
+                  value
+                    .split(',')
+                    .map((name) => name.trim())
+                    .filter(Boolean)
+                );
+              }, 80);
             }}
           />
+
           <div className="flex flex-wrap gap-2 mt-2">
             {companionNames.map((name, i) => (
               <Badge key={i} variant="secondary">
