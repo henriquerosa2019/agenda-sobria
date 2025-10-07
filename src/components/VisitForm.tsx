@@ -15,30 +15,29 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
   const [date, setDate] = useState(visit?.date || "");
   const [time, setTime] = useState(visit?.time || "");
   const [locationId, setLocationId] = useState(visit?.location?.id || "");
-  const [companions, setCompanions] = useState(
-    visit?.companions?.map((c: any) => c.name).join(", ") || ""
+  const [companions, setCompanions] = useState<{ name: string; cost?: number }[]>(
+    visit?.companions?.map((c: any) => ({ name: c.name, cost: c.cost ?? 0 })) || []
   );
   const [observation, setObservation] = useState(visit?.observation || "");
 
-  // Função auxiliar: converte texto para array limpo
-  const parseCompanions = (value: string): string[] => {
-    return value
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-  };
-
   const handleSave = async () => {
     try {
-      // Garante captura do último caractere digitado em mobile
-      await new Promise((r) => setTimeout(r, 120));
-
-      const parsedCompanions = parseCompanions(companions);
+      await new Promise((r) => setTimeout(r, 120)); // delay p/ mobile
 
       if (mode === "new") {
-        await createNewVisit(date, time, locationId, observation, parsedCompanions);
+        await createNewVisit(
+          date,
+          time,
+          locationId,
+          observation,
+          companions.map((c) => c.name)
+        );
       } else if (visit?.id) {
-        await saveVisitChanges(visit.id, observation, parsedCompanions);
+        await saveVisitChanges(
+          visit.id,
+          observation,
+          companions.map((c) => ({ name: c.name, cost: c.cost ?? 0 }))
+        );
       }
 
       if (onSaved) onSaved();
@@ -93,18 +92,71 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
         </div>
       </div>
 
+      {/* Companheiros */}
       <div className="mt-4">
         <label className="block text-sm mb-1">Companheiros</label>
+
+        {/* Campo para adicionar novo nome */}
         <input
           type="text"
-          placeholder="Digite nomes separados por vírgula"
-          className="w-full border rounded px-2 py-1"
-          value={companions}
-          onChange={(e) => setCompanions(e.target.value)}
-          onBlur={() => setCompanions(companions.trim())}
+          placeholder="Digite um nome e pressione Enter"
+          className="w-full border rounded px-2 py-1 mb-2"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.currentTarget.value.trim() !== "") {
+              e.preventDefault();
+              const newName = e.currentTarget.value.trim();
+              setCompanions((prev) => {
+                if (prev.some((c) => c.name === newName)) return prev; // evita duplicar
+                return [...prev, { name: newName, cost: 0 }];
+              });
+              e.currentTarget.value = "";
+            }
+          }}
         />
+
+        {/* Lista dinâmica */}
+        <div className="space-y-2">
+          {companions.length > 0 ? (
+            companions.map((c, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold min-w-[80px] text-center">
+                  {c.name}
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={c.cost ?? 0}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value) || 0;
+                    setCompanions((prev) =>
+                      prev.map((item, idx) =>
+                        idx === i ? { ...item, cost: val } : item
+                      )
+                    );
+                  }}
+                  className="border rounded px-2 py-1 w-20 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCompanions((prev) => prev.filter((_, idx) => idx !== i))
+                  }
+                  className="text-red-500 text-xs font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="text-xs text-gray-500 italic">
+              Nenhum companheiro adicionado
+            </p>
+          )}
+        </div>
       </div>
 
+      {/* Observações */}
       <div className="mt-4">
         <label className="block text-sm mb-1">Observação</label>
         <textarea
@@ -128,7 +180,7 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
             onClick={handleSave}
             className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
           >
-            Adicionar como nova visita
+            Adicionar nova visita
           </button>
         )}
       </div>
