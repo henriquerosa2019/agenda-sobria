@@ -1,15 +1,9 @@
 const Footer = () => {
   return (
-    <footer className="bg-primary text-primary-foreground py-6 mt-8">
-      <div className="max-w-6xl mx-auto text-center">
-        <p className="text-sm">
-          Nosso propósito primordial é mantermo-nos sóbrios e ajudar outros
-          alcoólicos a alcançarem a sobriedade.
-        </p>
-        <div className="mt-2 text-xs opacity-80">
-          <p>Alcoólicos Anônimos - Grupo de Serviço</p>
-        </div>
-      </div>
+    <footer className="bg-[#0B1E38] text-[#F4F4F4] text-center py-3 shadow-inner font-serif">
+      <p className="text-sm">
+        © 2025 Comitê de Tecnologia e Organização (CTO) — Amor em Serviço
+      </p>
     </footer>
   );
 };

@@ -18,7 +18,13 @@ const config: Config = {
       },
     },
     extend: {
+      // 🎨 Paleta de cores institucional
       colors: {
+        brand: {
+          blue: "#0B1E38", // azul escuro (fundo principal)
+          pink: "#E48BA0", // rosa do logotipo
+          white: "#F5F5F5", // branco suave do fundo
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -71,6 +77,8 @@ const config: Config = {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+
+      // 🧱 Bordas e animações originais
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -89,6 +97,13 @@ const config: Config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+
+      // ✨ Tipografia institucional
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        serif: ['"Times New Roman"', "serif"],
+        title: ['"Playfair Display"', "serif"], // semelhante à fonte da logo
       },
     },
   },

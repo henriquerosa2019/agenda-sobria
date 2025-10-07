@@ -2,6 +2,10 @@
 import { useState, useMemo, useEffect } from "react";
 import useVisits from "@/hooks/useVisits";
 import { supabase } from "@/lib/supabaseClient";
+import ChatGemini from "@/components/ChatGemini";
+import Header from "@/components/ui/Header";
+import Footer from "@/components/ui/Footer";
+
 
 // === Formata data no formato brasileiro (corrige -1 dia UTC) ===
 function formatDateBRFull(dateStr?: string): string {
@@ -1044,6 +1048,7 @@ function parseCurrencyBR(input: string): number | undefined {
           </h2>
         </div>
       </footer>
+      <ChatGemini />
     </div>
   );
 }
