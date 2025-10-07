@@ -1,10 +1,10 @@
+// src/components/VisitForm.tsx
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import useVisits from "@/hooks/useVisits";
 
 interface VisitFormProps {
   mode: "edit" | "new";
-  visit?: any; // visita existente (quando edit)
+  visit?: any;
   locations?: { id: string; name: string; address: string }[];
   onSaved?: () => void;
 }
@@ -20,22 +20,31 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
   );
   const [observation, setObservation] = useState(visit?.observation || "");
 
-  const handleSave = async () => {
-    // Aguarda 150ms para garantir leitura completa do input em mobile
-    await new Promise((res) => setTimeout(res, 150));
-
-    const companionList = companions
+  // Função auxiliar: converte texto para array limpo
+  const parseCompanions = (value: string): string[] => {
+    return value
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
+  };
 
-    if (mode === "new") {
-      await createNewVisit(date, time, locationId, observation, companionList);
-    } else {
-      await saveVisitChanges(visit.id, observation, companionList);
+  const handleSave = async () => {
+    try {
+      // Garante captura do último caractere digitado em mobile
+      await new Promise((r) => setTimeout(r, 120));
+
+      const parsedCompanions = parseCompanions(companions);
+
+      if (mode === "new") {
+        await createNewVisit(date, time, locationId, observation, parsedCompanions);
+      } else if (visit?.id) {
+        await saveVisitChanges(visit.id, observation, parsedCompanions);
+      }
+
+      if (onSaved) onSaved();
+    } catch (err) {
+      console.error("Erro ao salvar visita:", err);
     }
-
-    if (onSaved) onSaved();
   };
 
   return (
@@ -45,7 +54,6 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
       </h3>
 
       <div className="grid grid-cols-2 gap-4">
-        {/* Local (somente no modo "new") */}
         {mode === "new" && (
           <div className="col-span-2">
             <label className="block text-sm mb-1">Local</label>
@@ -64,12 +72,10 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
           </div>
         )}
 
-        {/* Data e Hora */}
         <div>
           <label className="block text-sm mb-1">Data da visita</label>
           <input
             type="date"
-            inputMode="numeric"
             className="w-full border rounded px-2 py-1"
             value={date}
             onChange={(e) => setDate(e.target.value)}
@@ -80,7 +86,6 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
           <label className="block text-sm mb-1">Hora agendada</label>
           <input
             type="time"
-            inputMode="numeric"
             className="w-full border rounded px-2 py-1"
             value={time}
             onChange={(e) => setTime(e.target.value)}
@@ -88,50 +93,34 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
         </div>
       </div>
 
-      {/* Companheiros */}
       <div className="mt-4">
         <label className="block text-sm mb-1">Companheiros</label>
         <input
           type="text"
-          inputMode="text"
           placeholder="Digite nomes separados por vírgula"
           className="w-full border rounded px-2 py-1"
           value={companions}
           onChange={(e) => setCompanions(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleSave();
-            }
-          }}
+          onBlur={() => setCompanions(companions.trim())}
         />
       </div>
 
-      {/* Observação */}
       <div className="mt-4">
         <label className="block text-sm mb-1">Observação</label>
         <textarea
-          inputMode="text"
           className="w-full border rounded px-2 py-1"
           rows={2}
           value={observation}
           onChange={(e) => setObservation(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleSave();
-            }
-          }}
         />
       </div>
 
-      {/* Botões */}
       <div className="flex gap-2 mt-4">
         <button
           onClick={handleSave}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          💾 Salvar
+          Salvar
         </button>
 
         {mode === "new" && (
@@ -139,7 +128,7 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
             onClick={handleSave}
             className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
           >
-            ➕ Adicionar como nova visita
+            Adicionar como nova visita
           </button>
         )}
       </div>
