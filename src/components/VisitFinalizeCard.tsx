@@ -4,7 +4,10 @@ import { Visit } from "@/hooks/useVisits";
 
 interface Props {
   visit: Visit;
-  onFinalize: (id: string, payload: { startTime: string; endTime: string; realCompanions: string[] }) => Promise<void>;
+  onFinalize: (
+    id: string,
+    payload: { startTime: string; endTime: string; realCompanions: string[] }
+  ) => Promise<void>;
   onClose: () => void;
 }
 
@@ -14,10 +17,16 @@ export default function VisitFinalizeCard({ visit, onFinalize, onClose }: Props)
   const [companions, setCompanions] = useState("");
 
   const handleFinalize = async () => {
+    // Pequeno delay para garantir que o último caractere do input mobile foi capturado
+    await new Promise((res) => setTimeout(res, 150));
+
     await onFinalize(visit.id, {
       startTime,
       endTime,
-      realCompanions: companions.split(",").map((c) => c.trim()).filter(Boolean),
+      realCompanions: companions
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean),
     });
     onClose();
   };
@@ -27,30 +36,44 @@ export default function VisitFinalizeCard({ visit, onFinalize, onClose }: Props)
       <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
         <h2 className="text-lg font-bold mb-4">Finalizar Visita</h2>
 
+        {/* Horário de início */}
         <label className="block mb-2 text-sm">Início</label>
         <input
           type="time"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
           className="w-full border rounded px-3 py-2 mb-4"
+          inputMode="numeric"
         />
 
+        {/* Horário de fim */}
         <label className="block mb-2 text-sm">Fim</label>
         <input
           type="time"
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
           className="w-full border rounded px-3 py-2 mb-4"
+          inputMode="numeric"
         />
 
-        <label className="block mb-2 text-sm">Companheiros (vírgula)</label>
+        {/* Companheiros */}
+        <label className="block mb-2 text-sm">Companheiros (separados por vírgula)</label>
         <input
           type="text"
+          inputMode="text"
+          placeholder="Ex: João, Sara, Danilo"
           value={companions}
           onChange={(e) => setCompanions(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleFinalize();
+            }
+          }}
           className="w-full border rounded px-3 py-2 mb-4"
         />
 
+        {/* Botões */}
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}

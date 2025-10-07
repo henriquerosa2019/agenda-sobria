@@ -17,11 +17,11 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
   const { toast } = useToast();
 
   const [observation, setObservation] = useState(visit.observation ?? '');
-  const [companionNames, setCompanionNames] = useState(
+  const [companionNames, setCompanionNames] = useState<string[]>(
     visit.companions?.map((c) => c.name) ?? []
   );
 
-  // Atualiza os campos se o objeto visita mudar
+  // Atualiza os campos se a visita mudar
   useEffect(() => {
     setObservation(visit.observation ?? '');
     setCompanionNames(visit.companions?.map((c) => c.name) ?? []);
@@ -34,8 +34,11 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
     }
 
     try {
+      // Aguarda breve delay para capturar último caractere digitado no mobile
+      await new Promise((res) => setTimeout(res, 150));
+
       await saveVisitChanges(visit.id, observation, companionNames);
-      toast({ title: 'Visita atualizada com sucesso!' });
+      toast({ title: '✅ Visita atualizada com sucesso!' });
     } catch (error) {
       toast({
         title: 'Erro ao salvar visita.',
@@ -65,9 +68,11 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
           {visit.time}
         </div>
 
+        {/* Companheiros */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Companheiros</label>
           <Input
+            inputMode="text"
             placeholder="Digite os nomes separados por vírgula"
             value={companionNames.join(', ')}
             onChange={(e) =>
@@ -78,6 +83,13 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
                   .filter(Boolean)
               )
             }
+            onKeyDown={(e) => {
+              // Permite salvar com Enter no celular
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSave();
+              }
+            }}
           />
           <div className="flex flex-wrap gap-2 mt-2">
             {companionNames.map((name, i) => (
@@ -89,17 +101,25 @@ export default function VisitEditor({ visit }: VisitEditorProps) {
           </div>
         </div>
 
+        {/* Observações */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Observações</label>
           <Input
+            inputMode="text"
             placeholder="Digite uma observação"
             value={observation}
             onChange={(e) => setObservation(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSave();
+              }
+            }}
           />
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={handleSave}>Salvar</Button>
+          <Button onClick={handleSave}>💾 Salvar</Button>
         </div>
       </CardContent>
     </Card>
