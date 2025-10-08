@@ -6,7 +6,6 @@ import ChatGemini from "@/components/ChatGemini";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 
-
 // === Formata data no formato brasileiro (corrige -1 dia UTC) ===
 function formatDateBRFull(dateStr?: string): string {
     if (!dateStr) return "";
@@ -94,6 +93,9 @@ function formatDateBRFull(dateStr?: string): string {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
+  
+  // ✅ ADICIONADO: Novo estado para controlar o campo de texto do novo companheiro
+  const [newCompanionName, setNewCompanionName] = useState("");
 
   // toast “Edição salva!”
   const [savedVisitId, setSavedVisitId] = useState<string | null>(null);
@@ -118,6 +120,8 @@ function formatDateBRFull(dateStr?: string): string {
         })) || [],
       _locationName: visit.location?.name || "", // mostrar Local
     });
+    // ✅ ADICIONADO: Limpa o campo de texto ao iniciar uma nova edição
+    setNewCompanionName("");
   };
 
 // Helpers de moeda
@@ -220,6 +224,18 @@ function parseCurrencyBR(input: string): number | undefined {
       ...prev,
       companions: prev.companions.filter((c: any) => c.name !== name),
     }));
+  };
+  
+  // ✅ ADICIONADO: Nova função para lidar com a adição do companheiro pelo botão OK ou Enter
+  const handleAddCompanion = () => {
+    const name = newCompanionName.trim();
+    if (name && !formData.companions?.some((c: any) => c.name === name)) {
+      setFormData({
+        ...formData,
+        companions: [...(formData.companions || []), { name, cost: "" }],
+      });
+      setNewCompanionName(""); // Limpa o campo de texto
+    }
   };
 
   // ====== filtragem das visitas ======
@@ -419,7 +435,6 @@ function parseCurrencyBR(input: string): number | undefined {
   const currency = (n: number) =>
     (n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-  /* ✅ NOVO: último dia finalizado por local (considerando filtros) */
   const lastFinalizedByLocation = useMemo(() => {
     const map = new Map<string, Date>();
     for (const v of filteredVisits) {
@@ -439,40 +454,28 @@ function parseCurrencyBR(input: string): number | undefined {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* ===== Header (novo) ===== */}
- {/* ===== HEADER PERSONALIZADO ===== */}
-<header
-  className="bg-[#123A73] text-white shadow-md flex items-center justify-between px-6 py-3"
-  style={{ fontFamily: "'Playfair Display', serif" }}
->
-  {/* Logo à esquerda */}
-  <div className="flex items-center space-x-3">
-    <img
-      src="/assets/aa-logo.png"
-      alt="Logo AA CTO DS17"
-      className="h-[150px] md:h-[180px] w-auto object-contain rounded-full bg-white/95 p-3 shadow-md border border-white/60"
+      <header
+        className="bg-[#123A73] text-white shadow-md flex items-center justify-between px-6 py-3"
+        style={{ fontFamily: "'Playfair Display', serif" }}
+      >
+        <div className="flex items-center space-x-3">
+          <img
+            src="/assets/aa-logo.png"
+            alt="Logo AA CTO DS17"
+            className="h-[150px] md:h-[180px] w-auto object-contain rounded-full bg-white/95 p-3 shadow-md border border-white/60"
+          />
+        </div>
+        <h3 className="flex-1 text-center text-xl md:text-2xl font-semibold text-[#E3E3E3] tracking-wide">
+          📅 PLANEJAMENTO DE VISITAS - CTO DS17 - ÁREA RJ
+        </h3>
+        <div className="w-10" />
+      </header>
 
-
-    />
-  </div>
-
-  {/* Texto centralizado */}
-  <h3 className="flex-1 text-center text-xl md:text-2xl font-semibold text-[#E3E3E3] tracking-wide">
-    📅 PLANEJAMENTO DE VISITAS - CTO DS17 - ÁREA RJ
-  </h3>
-
-  {/* Espaço invisível para manter centralização */}
-  <div className="w-10" />
-</header>
-
-      {/* ===== Main ===== */}
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <h1 className="text-2xl font-bold mb-4">📌 Gestão de Visitas - use os filtros para buscas</h1>
 
-          {/* ====== Barra de filtros (Local → Mês → Busca) ====== */}
           <div className="mb-2 grid grid-cols-1 md:grid-cols-5 gap-3">
-            {/* Local */}
             <select
               value={selectedLocal}
               onChange={(e) => setSelectedLocal(e.target.value)}
@@ -485,8 +488,6 @@ function parseCurrencyBR(input: string): number | undefined {
                 </option>
               ))}
             </select>
-
-            {/* Mês */}
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
@@ -499,8 +500,6 @@ function parseCurrencyBR(input: string): number | undefined {
                 </option>
               ))}
             </select>
-
-            {/* Busca (observação/companheiro) */}
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -508,8 +507,6 @@ function parseCurrencyBR(input: string): number | undefined {
               className="border rounded px-3 py-2 col-span-1 md:grid-cols-none md:col-span-2 bg-white"
               aria-label="Buscar por observação ou companheiro"
             />
-
-            {/* Botões */}
             <div className="flex gap-2">
               <button
                 onClick={clearFilters}
@@ -519,8 +516,6 @@ function parseCurrencyBR(input: string): number | undefined {
               >
                 Limpar filtros
               </button>
-
-              {/* Painel de dados (toggle) */}
               <button
                 onClick={() => setShowPanel((s) => !s)}
                 className="border rounded px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700"
@@ -532,10 +527,8 @@ function parseCurrencyBR(input: string): number | undefined {
             </div>
           </div>
 
-          {/* Painel de dados (cards + tabelas) */}
           {showPanel && (
             <section className="mb-6">
-              {/* Cards — VISUAL REFINADO */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="rounded-lg border p-5 bg-blue-50 text-black shadow-sm">
                   <p className="text-base md:text-lg font-semibold">Visitas neste mês</p>
@@ -547,14 +540,12 @@ function parseCurrencyBR(input: string): number | undefined {
                     {selectedMonth === "all" ? " (atual)" : ""}
                   </p>
                 </div>
-
                 <div className="rounded-lg border p-5 bg-blue-50 text-black shadow-sm">
                   <p className="text-base md:text-lg font-semibold">Todas (após filtros)</p>
                   <p className="mt-1 text-4xl md:text-5xl font-extrabold leading-none">
                     {filteredVisits.length}
                   </p>
                 </div>
-
                 <div className="rounded-lg border p-5 bg-blue-50 text-black shadow-sm">
                   <p className="text-base md:text-lg font-semibold">Locais distintos (após filtros)</p>
                   <p className="mt-1 text-4xl md:text-5xl font-extrabold leading-none">
@@ -568,10 +559,7 @@ function parseCurrencyBR(input: string): number | undefined {
                   </p>
                 </div>
               </div>
-
-              {/* Tabelas rápidas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Visitas por companheiro */}
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">Visitas por companheiro</h3>
@@ -602,8 +590,6 @@ function parseCurrencyBR(input: string): number | undefined {
                     )}
                   </div>
                 </div>
-
-                {/* Visitas por local — com coluna “Finalizada (última)” */}
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">Visitas por local</h3>
@@ -642,8 +628,6 @@ function parseCurrencyBR(input: string): number | undefined {
                   </div>
                 </div>
               </div>
-
-              {/* ========= Visitas na semana por companheiro ========= */}
               <div className="rounded-lg border bg-white mt-4">
                 <div className="p-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div>
@@ -657,7 +641,6 @@ function parseCurrencyBR(input: string): number | undefined {
                       Inclui visitas passadas e futuras desta semana, considerando os filtros acima.
                     </p>
                   </div>
-
                   <div className="flex gap-2">
                     <button
                       onClick={() => setWeekOffset((w) => w - 1)}
@@ -679,7 +662,6 @@ function parseCurrencyBR(input: string): number | undefined {
                     </button>
                   </div>
                 </div>
-
                 <div className="p-4">
                   {byCompanionWeek.length === 0 ? (
                     <p className="text-sm text-gray-500">Sem dados para a semana selecionada.</p>
@@ -719,10 +701,7 @@ function parseCurrencyBR(input: string): number | undefined {
                   )}
                 </div>
               </div>
-
-              {/* ===== CUSTOS ===== */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {/* Semana: por companheiro */}
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">
@@ -756,8 +735,6 @@ function parseCurrencyBR(input: string): number | undefined {
                     )}
                   </div>
                 </div>
-
-                {/* Semana: por local */}
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">
@@ -791,8 +768,6 @@ function parseCurrencyBR(input: string): number | undefined {
                     )}
                   </div>
                 </div>
-
-                {/* Mês: por companheiro */}
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">
@@ -823,8 +798,6 @@ function parseCurrencyBR(input: string): number | undefined {
                     )}
                   </div>
                 </div>
-
-                {/* Mês: por local */}
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">
@@ -856,11 +829,9 @@ function parseCurrencyBR(input: string): number | undefined {
                   </div>
                 </div>
               </div>
-              {/* ===== FIM CUSTOS ===== */}
             </section>
           )}
 
-          {/* Lista de cards (só quando o painel NÃO estiver aberto) */}
           {!showPanel && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredVisits.map((visit) => (
@@ -873,7 +844,6 @@ function parseCurrencyBR(input: string): number | undefined {
                     <>
                       <h2 className="font-bold text-lg mb-2">Editar Visita</h2>
 
-                      {/* Local (somente leitura) */}
                       <input
                         type="text"
                         value={formData._locationName || ""}
@@ -881,8 +851,6 @@ function parseCurrencyBR(input: string): number | undefined {
                         className="border p-2 rounded w-full mb-2 text-gray-800 bg-gray-50"
                         title="Local selecionado"
                       />
-
-                      {/* Data */}
                       <input
                         type="date"
                         value={formData.date}
@@ -891,8 +859,6 @@ function parseCurrencyBR(input: string): number | undefined {
                         }
                         className="border p-2 rounded w-full mb-2 text-gray-800"
                       />
-
-                      {/* Hora Início */}
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
                         Hora Início
                       </label>
@@ -904,8 +870,6 @@ function parseCurrencyBR(input: string): number | undefined {
                         }
                         className="border p-2 rounded w-full mb-2 text-gray-800"
                       />
-
-                      {/* Hora Final Visita */}
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
                         Hora Final Visita
                       </label>
@@ -918,36 +882,35 @@ function parseCurrencyBR(input: string): number | undefined {
                         className="border p-2 rounded w-full mb-2 text-gray-800"
                         title="Hora de finalização"
                       />
-
-     {/* Adicionar companheiro com sugestões automáticas */}
-<input
-  type="text"
-  list="companions-list"
-  placeholder="Adicionar companheiro e pressionar Enter"
-  className="border p-2 rounded w-full mb-2 text-gray-800"
-  onKeyDown={(e) => {
-    if (e.key === "Enter" && e.currentTarget.value.trim()) {
-      e.preventDefault();
-      const name = e.currentTarget.value.trim();
-      if (!formData.companions?.some((x: any) => x.name === name)) {
-        setFormData({
-          ...formData,
-          companions: [...(formData.companions || []), { name, cost: "" }],
-        });
+<div className="flex items-center gap-2 mb-2">
+  <input
+    type="text"
+    list="companions-list"
+    placeholder="Adicionar companheiro"
+    className="border p-2 rounded w-full text-gray-800"
+    value={newCompanionName}
+    onChange={(e) => setNewCompanionName(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleAddCompanion();
       }
-      e.currentTarget.value = "";
-    }
-  }}
-/>
-
-{/* Lista de nomes já existentes */}
+    }}
+  />
+  <button
+    type="button"
+    onClick={handleAddCompanion}
+    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-semibold"
+  >
+    OK
+  </button>
+</div>
 <datalist id="companions-list">
   {(companions || []).map((c: any) => (
     <option key={c.id} value={c.name} />
   ))}
 </datalist>
 
-                      {/* Lista: nome + Ajuda de Custo ao lado */}
                       <div className="space-y-2 mb-2">
                         {(formData.companions || []).map((c: any, i: number) => (
                           <div key={i} className="flex items-center gap-2">
@@ -973,12 +936,10 @@ function parseCurrencyBR(input: string): number | undefined {
                         ))}
                       </div>
 
-                      {/* toast */}
                       {savedVisitId === visit.id && (
                         <div className="text-green-600 text-sm mb-2">Edição salva!</div>
                       )}
 
-                      {/* Observação */}
                       <textarea
                         value={formData.notes}
                         onChange={(e) =>
@@ -995,7 +956,6 @@ function parseCurrencyBR(input: string): number | undefined {
                         >
                           Salvar
                         </button>
-
                         <button
                           onClick={() => handleFinalize(visit.id)}
                           className="bg-indigo-600 text-white px-3 py-1 rounded"
@@ -1057,7 +1017,6 @@ function parseCurrencyBR(input: string): number | undefined {
         </div>
       </main>
 
-      {/* ===== Footer (novo) ===== */}
       <footer className="[#123A73] text-white">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h2 className="text-white font-semibold text-lg md:text-xl leading-snug">
