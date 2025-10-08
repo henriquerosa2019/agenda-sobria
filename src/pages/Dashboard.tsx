@@ -469,9 +469,7 @@ function parseCurrencyBR(input: string): number | undefined {
 
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center mb-4">
-              <h1 className="text-2xl font-bold">📌 Gestão de Visitas - use os filtros para buscas</h1>
-          </div>
+          <h1 className="text-2xl font-bold mb-4">📌 Gestão de Visitas - use os filtros para buscas</h1>
 
           <div className="mb-2 grid grid-cols-1 md:grid-cols-5 gap-3">
             <select
@@ -527,7 +525,6 @@ function parseCurrencyBR(input: string): number | undefined {
 
           {showPanel && (
             <section className="mb-6">
-              {/* SEÇÃO DO PAINEL DE DADOS COMPLETA E INTOCADA */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="rounded-lg border p-5 bg-blue-50 text-black shadow-sm">
                   <p className="text-base md:text-lg font-semibold">Visitas neste mês</p>
@@ -539,12 +536,14 @@ function parseCurrencyBR(input: string): number | undefined {
                     {selectedMonth === "all" ? " (atual)" : ""}
                   </p>
                 </div>
+
                 <div className="rounded-lg border p-5 bg-blue-50 text-black shadow-sm">
                   <p className="text-base md:text-lg font-semibold">Todas (após filtros)</p>
                   <p className="mt-1 text-4xl md:text-5xl font-extrabold leading-none">
                     {filteredVisits.length}
                   </p>
                 </div>
+
                 <div className="rounded-lg border p-5 bg-blue-50 text-black shadow-sm">
                   <p className="text-base md:text-lg font-semibold">Locais distintos (após filtros)</p>
                   <p className="mt-1 text-4xl md:text-5xl font-extrabold leading-none">
@@ -558,6 +557,7 @@ function parseCurrencyBR(input: string): number | undefined {
                   </p>
                 </div>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
@@ -589,6 +589,7 @@ function parseCurrencyBR(input: string): number | undefined {
                     )}
                   </div>
                 </div>
+
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">Visitas por local</h3>
@@ -627,6 +628,7 @@ function parseCurrencyBR(input: string): number | undefined {
                   </div>
                 </div>
               </div>
+
               <div className="rounded-lg border bg-white mt-4">
                 <div className="p-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div>
@@ -640,6 +642,7 @@ function parseCurrencyBR(input: string): number | undefined {
                       Inclui visitas passadas e futuras desta semana, considerando os filtros acima.
                     </p>
                   </div>
+
                   <div className="flex gap-2">
                     <button
                       onClick={() => setWeekOffset((w) => w - 1)}
@@ -661,6 +664,7 @@ function parseCurrencyBR(input: string): number | undefined {
                     </button>
                   </div>
                 </div>
+
                 <div className="p-4">
                   {byCompanionWeek.length === 0 ? (
                     <p className="text-sm text-gray-500">Sem dados para a semana selecionada.</p>
@@ -700,6 +704,7 @@ function parseCurrencyBR(input: string): number | undefined {
                   )}
                 </div>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
@@ -734,6 +739,7 @@ function parseCurrencyBR(input: string): number | undefined {
                     )}
                   </div>
                 </div>
+
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">
@@ -767,6 +773,7 @@ function parseCurrencyBR(input: string): number | undefined {
                     )}
                   </div>
                 </div>
+
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">
@@ -797,6 +804,7 @@ function parseCurrencyBR(input: string): number | undefined {
                     )}
                   </div>
                 </div>
+
                 <div className="rounded-lg border bg-white">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">
