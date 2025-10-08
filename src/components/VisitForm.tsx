@@ -2,6 +2,7 @@
 import { useState } from "react";
 import useVisits from "@/hooks/useVisits";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PlusCircle } from "lucide-react";
 
 interface VisitFormProps {
@@ -27,7 +28,8 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
     const trimmed = newCompanion.trim();
     if (!trimmed) return;
     setCompanions((prev) => {
-      if (prev.some((c) => c.name.toLowerCase() === trimmed.toLowerCase())) return prev;
+      if (prev.some((c) => c.name.toLowerCase() === trimmed.toLowerCase()))
+        return prev; // evita duplicar
       return [...prev, { name: trimmed, cost: 0 }];
     });
     setNewCompanion("");
@@ -35,7 +37,8 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
 
   const handleSave = async () => {
     try {
-      await new Promise((r) => setTimeout(r, 150)); // delay para mobile
+      await new Promise((r) => setTimeout(r, 120)); // delay p/ mobile
+
       if (mode === "new") {
         await createNewVisit(
           date,
@@ -51,6 +54,7 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
           companions.map((c) => ({ name: c.name, cost: c.cost ?? 0 }))
         );
       }
+
       if (onSaved) onSaved();
     } catch (err) {
       console.error("Erro ao salvar visita:", err);
@@ -60,7 +64,7 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
   return (
     <div className="border rounded-lg p-4 mb-6 bg-white shadow-sm">
       <h3 className="font-bold mb-2">
-        {mode === "new" ? "Nova Visita" : Editar Visita: ${visit?.location?.name}}
+        {mode === "new" ? "Nova Visita" : `Editar Visita: ${visit?.location?.name}`}
       </h3>
 
       <div className="grid grid-cols-2 gap-4">
@@ -105,14 +109,12 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
 
       {/* Companheiros */}
       <div className="mt-4">
-        <label className="block text-sm font-medium mb-1">Companheiros</label>
+        <label className="block text-sm mb-1">Companheiros</label>
 
-        {/* Campo + Botão OK */}
-        <div className="flex items-center gap-2 mb-2">
-          <input
-            type="text"
-            placeholder="Digite o nome do companheiro"
-            className="flex-1 border rounded px-2 py-1"
+        {/* Campo de novo companheiro + botão OK */}
+        <div className="flex items-center gap-2 mb-3">
+          <Input
+            placeholder="Digite o nome e clique OK"
             value={newCompanion}
             onChange={(e) => setNewCompanion(e.target.value)}
             onKeyDown={(e) => {
@@ -124,9 +126,11 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
           />
           <Button
             onClick={handleAddCompanion}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm flex items-center"
+            variant="default"
+            className="bg-blue-600 text-white hover:bg-blue-700"
           >
-            <PlusCircle size={16} className="mr-1" /> OK
+            <PlusCircle size={16} className="mr-1" />
+            OK
           </Button>
         </div>
 
@@ -156,9 +160,7 @@ export default function VisitForm({ mode, visit, locations, onSaved }: VisitForm
                 <button
                   type="button"
                   onClick={() =>
-                    setCompanions((prev) =>
-                      prev.filter((_, idx) => idx !== i)
-                    )
+                    setCompanions((prev) => prev.filter((_, idx) => idx !== i))
                   }
                   className="text-red-500 text-xs font-bold"
                 >
