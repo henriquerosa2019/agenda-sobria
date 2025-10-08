@@ -9,6 +9,7 @@ import Footer from "@/components/ui/Footer";
 // === Formata data no formato brasileiro (corrige -1 dia UTC) ===
 function formatDateBRFull(dateStr?: string): string {
     if (!dateStr) return "";
+    // cria uma data “sem deslocar” o fuso
     const [year, month, day] = dateStr.split("T")[0].split("-").map(Number);
     const d = new Date(year, month - 1, day); // local sem UTC offset
     const str = d.toLocaleDateString("pt-BR", {
@@ -93,7 +94,8 @@ function formatDateBRFull(dateStr?: string): string {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
   
-  const [newCompanionName, setNewCompanionName] = useState<string>("");
+  // ✅ ADICIONADO: Novo estado para controlar o campo de texto do novo companheiro
+  const [newCompanionName, setNewCompanionName] = useState("");
 
   // toast “Edição salva!”
   const [savedVisitId, setSavedVisitId] = useState<string | null>(null);
@@ -118,6 +120,7 @@ function formatDateBRFull(dateStr?: string): string {
         })) || [],
       _locationName: visit.location?.name || "", // mostrar Local
     });
+    // ✅ ADICIONADO: Limpa o campo de texto ao iniciar uma nova edição
     setNewCompanionName("");
   };
 
@@ -191,6 +194,7 @@ function parseCurrencyBR(input: string): number | undefined {
     showSaved(id);
   };
   
+
   // Finalizar visita
   const handleFinalize = async (id: string) => {
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -222,6 +226,7 @@ function parseCurrencyBR(input: string): number | undefined {
     }));
   };
   
+  // ✅ ADICIONADO: Nova função para lidar com a adição do companheiro pelo botão OK ou Enter
   const handleAddCompanion = () => {
     const name = newCompanionName.trim();
     if (name && !formData.companions?.some((c: any) => c.name === name)) {
@@ -229,10 +234,9 @@ function parseCurrencyBR(input: string): number | undefined {
         ...formData,
         companions: [...(formData.companions || []), { name, cost: "" }],
       });
-      setNewCompanionName("");
+      setNewCompanionName(""); // Limpa o campo de texto
     }
   };
-
 
   // ====== filtragem das visitas ======
   const filteredVisits = useMemo(() => {
@@ -469,9 +473,7 @@ function parseCurrencyBR(input: string): number | undefined {
 
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center mb-4">
-              <h1 className="text-2xl font-bold">📌 Gestão de Visitas - use os filtros para buscas</h1>
-          </div>
+          <h1 className="text-2xl font-bold mb-4">📌 Gestão de Visitas - use os filtros para buscas</h1>
 
           <div className="mb-2 grid grid-cols-1 md:grid-cols-5 gap-3">
             <select
@@ -527,7 +529,6 @@ function parseCurrencyBR(input: string): number | undefined {
 
           {showPanel && (
             <section className="mb-6">
-              {/* SEÇÃO DO PAINEL DE DADOS COMPLETA E INTOCADA */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="rounded-lg border p-5 bg-blue-50 text-black shadow-sm">
                   <p className="text-base md:text-lg font-semibold">Visitas neste mês</p>
@@ -842,11 +843,13 @@ function parseCurrencyBR(input: string): number | undefined {
                   {editingId === visit.id ? (
                     <>
                       <h2 className="font-bold text-lg mb-2">Editar Visita</h2>
+
                       <input
                         type="text"
                         value={formData._locationName || ""}
                         disabled
                         className="border p-2 rounded w-full mb-2 text-gray-800 bg-gray-50"
+                        title="Local selecionado"
                       />
                       <input
                         type="date"
@@ -854,7 +857,7 @@ function parseCurrencyBR(input: string): number | undefined {
                         onChange={(e) =>
                           setFormData({ ...formData, date: e.target.value })
                         }
-                        className="border p-2 rounded w-full mb-2"
+                        className="border p-2 rounded w-full mb-2 text-gray-800"
                       />
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
                         Hora Início
@@ -865,7 +868,7 @@ function parseCurrencyBR(input: string): number | undefined {
                         onChange={(e) =>
                           setFormData({ ...formData, time: e.target.value })
                         }
-                        className="border p-2 rounded w-full mb-2"
+                        className="border p-2 rounded w-full mb-2 text-gray-800"
                       />
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
                         Hora Final Visita
@@ -876,36 +879,38 @@ function parseCurrencyBR(input: string): number | undefined {
                         onChange={(e) =>
                           setFormData({ ...formData, endTime: e.target.value })
                         }
-                        className="border p-2 rounded w-full mb-2"
+                        className="border p-2 rounded w-full mb-2 text-gray-800"
+                        title="Hora de finalização"
                       />
-                      <div className="flex items-center gap-2 mb-2">
-                        <input
-                          type="text"
-                          list="companions-list"
-                          placeholder="Adicionar companheiro"
-                          className="border p-2 rounded w-full"
-                          value={newCompanionName}
-                          onChange={(e) => setNewCompanionName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleAddCompanion();
-                            }
-                          }}
-                        />
-                        <button
-                          type="button"
-                          onClick={handleAddCompanion}
-                          className="bg-blue-600 text-white px-4 py-2 rounded"
-                        >
-                          OK
-                        </button>
-                      </div>
-                      <datalist id="companions-list">
-                        {(companions || []).map((c: any) => (
-                          <option key={c.id} value={c.name} />
-                        ))}
-                      </datalist>
+<div className="flex items-center gap-2 mb-2">
+  <input
+    type="text"
+    list="companions-list"
+    placeholder="Adicionar companheiro"
+    className="border p-2 rounded w-full text-gray-800"
+    value={newCompanionName}
+    onChange={(e) => setNewCompanionName(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleAddCompanion();
+      }
+    }}
+  />
+  <button
+    type="button"
+    onClick={handleAddCompanion}
+    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-semibold"
+  >
+    OK
+  </button>
+</div>
+<datalist id="companions-list">
+  {(companions || []).map((c: any) => (
+    <option key={c.id} value={c.name} />
+  ))}
+</datalist>
+
                       <div className="space-y-2 mb-2">
                         {(formData.companions || []).map((c: any, i: number) => (
                           <div key={i} className="flex items-center gap-2">
@@ -915,10 +920,10 @@ function parseCurrencyBR(input: string): number | undefined {
                             <input
                               type="text"
                               inputMode="decimal"
-                              placeholder="Ajuda de Custo (ex: R$15,00)"
-                              value={c.cost ?? ""}
-                              onChange={(e) => handleCostChange(e, i)}
-                              className="border p-2 rounded text-sm w-44"
+                                 placeholder="Ajuda de Custo (ex: R$15,00)"
+                                 value={c.cost ?? ""}
+                                    onChange={(e) => handleCostChange(e, i)}
+                                    className="border p-2 rounded text-sm w-44"
                             />
                             <button
                               onClick={() => removeCompanion(c.name)}
@@ -930,14 +935,20 @@ function parseCurrencyBR(input: string): number | undefined {
                           </div>
                         ))}
                       </div>
+
+                      {savedVisitId === visit.id && (
+                        <div className="text-green-600 text-sm mb-2">Edição salva!</div>
+                      )}
+
                       <textarea
                         value={formData.notes}
                         onChange={(e) =>
                           setFormData({ ...formData, notes: e.target.value })
                         }
                         placeholder="Digite uma observação"
-                        className="border p-2 rounded w-full mb-2"
+                        className="border p-2 rounded w-full text-gray-800 mb-2"
                       />
+
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleSave(visit.id)}
@@ -957,18 +968,17 @@ function parseCurrencyBR(input: string): number | undefined {
                   ) : (
                     <>
                       <h2 className="font-bold text-lg">{visit.location?.name}</h2>
-                      <p className="text-gray-700 text-base">
-                        {visit.location?.address}
-                      </p>
+                      <p className="text-gray-700 text-base">{visit.location?.address}</p>
                       <p className="text-gray-700 text-base mb-2">
-                        📅 {formatDateBRFull(visit.date)} às {visit.time}
-                        {visit.endTime ? ` → ${visit.endTime}` : ""}
-                        {(visit.isFinalized || visit.endTime) && (
+                      📅 {formatDateBRFull(visit.date)} às {visit.time}
+                        {(visit as any).endTime ? ` → ${(visit as any).endTime}` : ""}
+                        {(visit as any).isFinalized || (visit as any).endTime ? (
                           <span className="ml-2 inline-flex items-center rounded bg-green-100 text-green-800 px-2 py-0.5 text-xs font-medium">
                             Visita finalizada
                           </span>
-                        )}
+                        ) : null}
                       </p>
+
                       <div className="flex flex-wrap gap-2 mb-2">
                         {visit.companions?.map((c) => (
                           <span
@@ -976,15 +986,13 @@ function parseCurrencyBR(input: string): number | undefined {
                             className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
                           >
                             {c.name}
-                            {typeof c.cost === "number" &&
-                            isFinite(c.cost)
-                              ? ` — R$ ${c.cost
-                                  .toFixed(2)
-                                  .replace(".", ",")}`
+                            {typeof c.cost === "number" && isFinite(c.cost)
+                              ? ` — R$ ${c.cost.toFixed(2).replace(".", ",")}`
                               : ""}
                           </span>
                         ))}
                       </div>
+
                       {visit.observation && (
                         <p className="text-gray-600 italic text-base leading-relaxed">
                           Observação:{" "}
@@ -993,6 +1001,7 @@ function parseCurrencyBR(input: string): number | undefined {
                           </span>
                         </p>
                       )}
+
                       <button
                         onClick={() => handleEdit(visit)}
                         className="bg-blue-600 text-white px-3 py-1 rounded mt-2"
@@ -1007,11 +1016,11 @@ function parseCurrencyBR(input: string): number | undefined {
           )}
         </div>
       </main>
-      <footer className="bg-[#123A73] text-white">
+
+      <footer className="[#123A73] text-white">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h2 className="text-white font-semibold text-lg md:text-xl leading-snug">
-            Nosso Propósito primordial é mantermo-nos sóbrios e ajudar outros a
-            alcançarem a sobriedade
+            Nosso Propósito primordial é mantermo-nos sóbrios e ajudar outros a alcançarem a sobriedade
           </h2>
         </div>
       </footer>
