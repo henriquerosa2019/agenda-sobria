@@ -1,0 +1,14 @@
+name: 🚀 Deploy Automático na Vercel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔄 Disparar Deploy na Vercel
+        run: |
+          curl -X POST "https://api.vercel.com/v1/integrations/deploy/https://api.vercel.com/v1/integrations/deploy/prj_MlSVYe1qjc1TGFBLTImEKzUy7r7e/UCmFqYy6UW
