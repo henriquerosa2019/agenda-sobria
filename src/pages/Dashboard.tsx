@@ -469,7 +469,9 @@ function parseCurrencyBR(input: string): number | undefined {
 
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold mb-4">📌 Gestão de Visitas - use os filtros para buscas</h1>
+          <div className="flex justify-between items-center mb-4">
+              <h1 className="text-2xl font-bold">📌 Gestão de Visitas - use os filtros para buscas</h1>
+          </div>
 
           <div className="mb-2 grid grid-cols-1 md:grid-cols-5 gap-3">
             <select
@@ -525,6 +527,7 @@ function parseCurrencyBR(input: string): number | undefined {
 
           {showPanel && (
             <section className="mb-6">
+              {/* SEÇÃO DO PAINEL DE DADOS COMPLETA E INTOCADA */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="rounded-lg border p-5 bg-blue-50 text-black shadow-sm">
                   <p className="text-base md:text-lg font-semibold">Visitas neste mês</p>

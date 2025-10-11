@@ -1,21 +1,19 @@
 import { Routes, Route } from "react-router-dom";
+import SplashScreen from "@/pages/SplashScreen";
 import Dashboard from "@/pages/Dashboard";
+import Configurar from "@/pages/Configurar";
 import SmokeTest from "./debug/SmokeTest";
-import Configurar from "./pages/Configurar";
-import { Analytics } from "@vercel/analytics/react"; // 👈 importa o componente da Vercel
 
 export default function App() {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/debug" element={<SmokeTest />} />
-        <Route path="/configurar" element={<Configurar />} />
-      </Routes>
+    <Routes>
+      {/* Tela de abertura */}
+      <Route path="/" element={<SplashScreen />} />
 
-      {/* 👇 Componente do Vercel Analytics — rastreia todas as rotas */}
-      <Analytics />
-    </>
+      {/* Demais rotas */}
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/configurar" element={<Configurar />} />
+      <Route path="/debug" element={<SmokeTest />} />
+    </Routes>
   );
 }
